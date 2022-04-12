@@ -53,12 +53,9 @@ class SerializeMixin:
         return result
 
     def __repr__(self):
-        _id = getattr(self, "id", "")
         name = getattr(self, "name", "")
-        if _id and name:
-            return '{}(id={}, name="{}")'.format(self.__class__.__name__, _id, name)
-        if _id:
-            return str(_id)
+        if _id := getattr(self, "id", ""):
+            return f'{self.__class__.__name__}(id={_id}, name="{name}")' if name else _id
         return name
 
 
@@ -129,14 +126,12 @@ class CRUDMixin(SerializeMixin):
         if not item:
             return
 
-        updated = update_model_fields(
+        if updated := update_model_fields(
             item,
             skip_if_value_none=skip_if_value_none,
             field_names=field_names,
             **fields,
-        )
-
-        if updated:
+        ):
             if hasattr(item, "updated_at"):
                 setattr(item, "updated_at", datetime.now())
 

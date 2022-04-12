@@ -72,16 +72,15 @@ FROM
         self.assertEqual(len(processed_query[0]), 1)
         self.assertSetEqual(
             set(processed_query[0][0]),
-            set(
-                [
-                    "main.world_happiness_2019",
-                    "main.world_happiness_2018",
-                    "main.world_happiness_2017",
-                    "main.world_happiness_2016",
-                    "main.world_happiness_2015",
-                ]
-            ),
+            {
+                "main.world_happiness_2019",
+                "main.world_happiness_2018",
+                "main.world_happiness_2017",
+                "main.world_happiness_2016",
+                "main.world_happiness_2015",
+            },
         )
+
 
         self.assertEqual(
             processed_query[1],

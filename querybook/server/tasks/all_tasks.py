@@ -22,7 +22,7 @@ LOG = get_logger(__file__)
 
 try:
     tasks_module = import_module("tasks_plugin")
-except (ImportError, ModuleNotFoundError) as err:
+except ImportError as err:
     LOG.info("Cannot import %s for tasks due to: %s", "task_plugin", err)
 
 # Linter

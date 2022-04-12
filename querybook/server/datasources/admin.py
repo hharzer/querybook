@@ -34,10 +34,7 @@ def get_announcements():
 @admin_only
 def get_announcements_admin():
     announcements = Announcement.get_all()
-    announcements_dict = [
-        announcement.to_dict_admin() for announcement in announcements
-    ]
-    return announcements_dict
+    return [announcement.to_dict_admin() for announcement in announcements]
 
 
 @register("/admin/announcement/", methods=["POST"])
@@ -119,8 +116,7 @@ def get_query_engine_status_checkers():
 def get_all_query_engines_admin():
     with DBSession() as session:
         engines = QueryEngine.get_all(session=session)
-        engines_dict = [engine.to_dict_admin() for engine in engines]
-        return engines_dict
+        return [engine.to_dict_admin() for engine in engines]
 
 
 @register(
@@ -179,8 +175,7 @@ def update_query_engine(id, **fields_to_update):
             ],
             session=session,
         )
-        query_engine_dict = query_engine.to_dict_admin()
-        return query_engine_dict
+        return query_engine.to_dict_admin()
 
 
 @register(
@@ -227,8 +222,7 @@ def get_all_query_metastores_admin():
 
     with DBSession() as session:
         metastores = logic.get_all_query_metastore(session=session)
-        metastores_dict = [metastore.to_dict_admin() for metastore in metastores]
-        return metastores_dict
+        return [metastore.to_dict_admin() for metastore in metastores]
 
     return []
 
@@ -256,8 +250,7 @@ def create_metastore(
             },
             session=session,
         )
-        metastore_dict = metastore.to_dict_admin()
-        return metastore_dict
+        return metastore.to_dict_admin()
 
 
 @register(
@@ -280,8 +273,7 @@ def update_metastore(
             ),
             session=session,
         )
-        metastore_dict = metastore.to_dict_admin()
-        return metastore_dict
+        return metastore.to_dict_admin()
 
 
 @register(
@@ -560,27 +552,26 @@ def exec_demo_set_up():
 
         task_schedule_id = TaskSchedule.create(
             {
-                "name": "update_metastore_{}".format(metastore_id),
+                "name": f"update_metastore_{metastore_id}",
                 "task": "tasks.update_metastore.update_metastore",
                 "cron": "0 0 * * *",
                 "args": [metastore_id],
                 "task_type": "prod",
                 "enabled": True,
             },
-            # commit=False,
             session=session,
         ).id
+
         schedule_logic.run_and_log_scheduled_task(
             scheduled_task_id=task_schedule_id, wait_to_finish=True, session=session
         )
 
-        golden_table = metastore_logic.get_table_by_name(
+        if golden_table := metastore_logic.get_table_by_name(
             schema_name="main",
             name="world_happiness_2019",
             metastore_id=metastore_id,
             session=session,
-        )
-        if golden_table:
+        ):
             metastore_logic.update_table(
                 id=golden_table.id, golden=True, session=session
             )
@@ -605,14 +596,12 @@ def exec_demo_set_up():
 
         demo_logic.create_demo_lineage(metastore_id, current_user.id, session=session)
 
-        data_doc_id = demo_logic.create_demo_data_doc(
+        if data_doc_id := demo_logic.create_demo_data_doc(
             environment_id=environment.id,
             engine_id=engine_id,
             uid=current_user.id,
             session=session,
-        )
-
-        if data_doc_id:
+        ):
             session.commit()
 
             return {
@@ -621,7 +610,7 @@ def exec_demo_set_up():
             }
 
 
-admin_item_type_values = set(item.value for item in AdminItemType)
+admin_item_type_values = {item.value for item in AdminItemType}
 
 
 @register("/admin/audit_log/", methods=["GET"])

@@ -212,9 +212,7 @@ def create_user_role(uid, role, commit=True, session=None):
 
 @with_session
 def delete_user_role(id, commit=True, session=None):
-    user_role = get_user_role_by_id(id, session=session)
-
-    if user_role:
+    if user_role := get_user_role_by_id(id, session=session):
         session.delete(user_role)
         if commit:
             session.commit()

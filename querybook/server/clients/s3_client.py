@@ -93,11 +93,11 @@ class S3KeySigner(object):
 
         # Check if file exists
         objects = list(self._bucket.objects.filter(Prefix=key))
-        if len(objects) > 0 and objects[0].key == key:
-            url = self._s3.generate_presigned_url(
+        if objects and objects[0].key == key:
+            return self._s3.generate_presigned_url(
                 ClientMethod=method, Params=params, ExpiresIn=expires_in
             )
-            return url
+
         return None
 
 
@@ -122,9 +122,7 @@ class S3FileReader(ChunkReader):
             self._body = self._object.get()["Body"]
         except botocore.exceptions.ClientError as e:
             if e.response["Error"]["Code"] == "NoSuchKey":
-                raise FileDoesNotExist(
-                    "{}/{} does not exist".format(self._bucket_name, key)
-                )
+                raise FileDoesNotExist(f"{self._bucket_name}/{key} does not exist")
             else:
                 raise e
 

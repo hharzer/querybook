@@ -68,16 +68,19 @@ def run_datadoc_with_config(
                     "uid": runner_id,
                 },
             }
-            tasks_to_run.append(
-                _start_query_execution_task.si(
-                    **start_query_execution_kwargs,
-                    previous_query_status=QueryExecutionStatus.DONE.value,
+            tasks_to_run.extend(
+                (
+                    _start_query_execution_task.si(
+                        **start_query_execution_kwargs,
+                        previous_query_status=QueryExecutionStatus.DONE.value,
+                    )
+                    if index == 0
+                    else _start_query_execution_task.s(
+                        **start_query_execution_kwargs
+                    ),
+                    run_query_task.s(),
                 )
-                if index == 0
-                else _start_query_execution_task.s(**start_query_execution_kwargs)
             )
-
-            tasks_to_run.append(run_query_task.s())
 
         # Create db entry record
         record_id = create_task_run_record_for_celery_task(self, session=session)

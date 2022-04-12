@@ -25,10 +25,10 @@ def get_presto_connection_conf(connection_string: str) -> PrestoConnectionConf:
         connection_string,
     )
 
-    raw_hosts = match.group(1)
-    catalog = (match.group(2) or "/hive")[1:]
-    schema = (match.group(3) or "/default")[1:]
-    raw_conf = (match.group(4) or "?")[1:]
+    raw_hosts = match[1]
+    catalog = (match[2] or "/hive")[1:]
+    schema = (match[3] or "/default")[1:]
+    raw_conf = (match[4] or "?")[1:]
 
     parsed_hosts = [split_hostport(hostport) for hostport in raw_hosts.split(",")]
     hostname, port = random_choice(parsed_hosts, default=(None, None))

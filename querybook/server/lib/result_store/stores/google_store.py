@@ -79,10 +79,9 @@ class GoogleReader(BaseReader):
             ] = f'attachment; filename="{custom_name}"'
 
         key_signer = GoogleKeySigner(QuerybookSettings.STORE_BUCKET_NAME)
-        download_url = key_signer.generate_presigned_url(
+        return key_signer.generate_presigned_url(
             self.uri, params=signed_url_params
         )
-        return download_url
 
     @property
     def uri(self):

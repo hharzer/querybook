@@ -42,11 +42,10 @@ class ExecuteQuery(object):
             return None
 
         cursor = self.executor._get_client(client_settings).cursor()
-        if self._async:
-            self._async_run(cursor, statements)
-            return None
-        else:
+        if not self._async:
             return self._sync_run(cursor, statements)
+        self._async_run(cursor, statements)
+        return None
 
     def _sync_run(self, cursor, statements):
         for statement in statements[:-1]:
@@ -107,7 +106,7 @@ class ExecuteQuery(object):
         if num_statements == 0:
             return 100
 
-        return sum([progress / num_statements for progress in self._progress])
+        return sum(progress / num_statements for progress in self._progress)
 
     @property
     def result(self):
@@ -120,12 +119,11 @@ class ExecuteQuery(object):
 
 
 def parse_statement_from_query(executor, query):
-    if executor.SINGLE_QUERY_QUERY_ENGINE():
-        statements = [query]
-    else:
-        statements = get_statements(query)
-
-    return statements
+    return (
+        [query]
+        if executor.SINGLE_QUERY_QUERY_ENGINE()
+        else get_statements(query)
+    )
 
 
 execute_query = ExecuteQuery(False)

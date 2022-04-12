@@ -23,9 +23,7 @@ def get_google_credentials(creds_info=None):
     cred_to_use = creds_info or QuerybookSettings.GOOGLE_CREDS
     assert cred_to_use is not None, "Invalid Google credentials"
 
-    credentials = service_account.Credentials.from_service_account_info(cred_to_use)
-
-    return credentials
+    return service_account.Credentials.from_service_account_info(cred_to_use)
 
 
 GOOGLE_AUTH_CONFIG = "https://accounts.google.com/.well-known/openid-configuration"
@@ -126,9 +124,7 @@ class GoogleDownloadClient(ChunkReader):
         bucket = client.bucket(bucket_name)
         blob = bucket.blob(blob_name)
         if not blob.exists():
-            raise FileDoesNotExist(
-                "{}/{} does not exist".format(bucket_name, blob_name)
-            )
+            raise FileDoesNotExist(f"{bucket_name}/{blob_name} does not exist")
 
         # Start the transport process
         self._transport = AuthorizedSession(credentials=client._credentials)

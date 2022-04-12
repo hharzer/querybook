@@ -64,7 +64,7 @@ def import_module_with_default(module_path: str, module_variable: str = None, **
             plugin_value = kwargs["default"]
 
         return plugin_value
-    except (ImportError, ModuleNotFoundError) as err:
+    except ImportError as err:
         # Suppress this err
         LOG.debug(f"Cannot import {module_path}.{module_variable} due to: {str(err)}")
         if not has_default:

@@ -29,9 +29,7 @@ def get_env_config(name, optional=True):
         found = False
     # We treat empty string as None as well
     if not found and not optional and not in_test:
-        raise MissingConfigException(
-            "{} is required to start the process.".format(name)
-        )
+        raise MissingConfigException(f"{name} is required to start the process.")
     return val
 
 
@@ -82,18 +80,19 @@ class QuerybookSettings(object):
     LDAP_BIND_PASSWORD = get_env_config("LDAP_BIND_PASSWORD")
     LDAP_SEARCH = get_env_config("LDAP_SEARCH")
     LDAP_FILTER = get_env_config("LDAP_FILTER")
-    # Configuration validation
-    if LDAP_CONN is not None:
-        if LDAP_USE_BIND_USER:
-            if (
+    if LDAP_USE_BIND_USER:
+        if LDAP_CONN is not None and (
+            (
                 LDAP_BIND_USER is None
                 or LDAP_BIND_PASSWORD is None
                 or LDAP_SEARCH is None
-            ):
-                raise ValueError(
-                    "LDAP_BIND_USER, LDAP_BIND_PASSWORD and LDAP_SEARCH has to be set when using LDAP bind user connection"
-                )
-        elif LDAP_USER_DN is None:
+            )
+        ):
+            raise ValueError(
+                "LDAP_BIND_USER, LDAP_BIND_PASSWORD and LDAP_SEARCH has to be set when using LDAP bind user connection"
+            )
+    elif LDAP_USER_DN is None:
+        if LDAP_CONN is not None:
             raise ValueError(
                 "LDAP_USER_DN has to be set when using direct LDAP connection"
             )

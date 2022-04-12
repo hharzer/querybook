@@ -132,23 +132,25 @@ def validate_form(form: AllFormField, form_value) -> [bool, str]:
 
     elif isinstance(form, FormField):
         if form_value is None:
-            if form.required:
-                return False, "Required field is missing"
-            return True, ""
-
+            return (False, "Required field is missing") if form.required else (True, "")
         if form.field_type == FormFieldType.String:
             if not isinstance(form_value, str):
                 return False, "Field value is not a string"
-            if form.regex is not None:
-                if not re.match(form.regex, form_value):
-                    return False, "Field value does not match regex"
+            if form.regex is not None and not re.match(form.regex, form_value):
+                return False, "Field value does not match regex"
             return True, ""
         elif form.field_type == FormFieldType.Number:
-            if not isinstance(form_value, (int, float)):
-                return False, "Field value is not a number"
-            return True, ""
+            return (
+                (True, "")
+                if isinstance(form_value, (int, float))
+                else (False, "Field value is not a number")
+            )
+
         elif form.field_type == FormFieldType.Boolean:
-            if not isinstance(form_value, bool):
-                return False, "Field value is not a boolean"
-            return True, ""
+            return (
+                (True, "")
+                if isinstance(form_value, bool)
+                else (False, "Field value is not a boolean")
+            )
+
     return False, "Unexpected form type"

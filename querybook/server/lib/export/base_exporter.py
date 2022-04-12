@@ -112,13 +112,12 @@ class BaseExporter(metaclass=ABCMeta):
         )
         if statement_execution.result_path:
             with GenericReader(statement_execution.result_path) as reader:
-                if raw:
-                    result = "\n".join(
-                        reader.read_lines(number_of_lines=number_of_lines)
-                    )
-                else:
-                    result = reader.read_csv(number_of_lines=number_of_lines)
-                return result
+                return (
+                    "\n".join(reader.read_lines(number_of_lines=number_of_lines))
+                    if raw
+                    else reader.read_csv(number_of_lines=number_of_lines)
+                )
+
         return None
 
     def _get_statement_execution_result_iter(

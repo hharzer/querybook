@@ -45,10 +45,7 @@ def _extract_connection_url(connection_string: str) -> RawHiveConnectionConf:
     conf_list = match.group(4) or ""
     var_list = match.group(5) or ""
 
-    parsed_hosts = []
-    for hostport in hosts.split(","):
-        parsed_hosts.append(split_hostport(hostport))
-
+    parsed_hosts = [split_hostport(hostport) for hostport in hosts.split(",")]
     parsed_session_variables = get_parsed_variables(session_variables[1:])
     parsed_conf_list = get_parsed_variables(conf_list[1:])
     parsed_var_list = get_parsed_variables(var_list[1:])
@@ -88,8 +85,9 @@ def get_hive_host_port_from_zk(
 
 
 def _server_uri_to_dict(server_uri: str) -> Optional[Dict[str, str]]:
-    match = re.search(r"serverUri=(.*);version=(.*);sequence=(.*)", server_uri)
-    if match:
+    if match := re.search(
+        r"serverUri=(.*);version=(.*);sequence=(.*)", server_uri
+    ):
         return {
             "serverUri": match.group(1),
             "version": match.group(2),

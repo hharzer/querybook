@@ -58,14 +58,15 @@ def get_flattened_executor_template() -> Dict:
             else executor_language
         )
 
-        for language in executor_languages:
-            all_templates.append(
-                dict(
-                    language=language,
-                    name=executor_name,
-                    template=executor_template,
-                )
+        all_templates.extend(
+            dict(
+                language=language,
+                name=executor_name,
+                template=executor_template,
             )
+            for language in executor_languages
+        )
+
     return all_templates
 
 

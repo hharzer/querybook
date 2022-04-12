@@ -145,8 +145,7 @@ def swap_query_engine_order_in_environment(
 
 @with_session
 def delete_query_engine_by_id(id, commit=True, session=None):
-    query_engine = get_query_engine_by_id(id, session=session)
-    if query_engine:
+    if query_engine := get_query_engine_by_id(id, session=session):
         query_engine.deleted_at = datetime.now()
         # session.delete(query_engine)
         if commit:
@@ -155,8 +154,7 @@ def delete_query_engine_by_id(id, commit=True, session=None):
 
 @with_session
 def recover_query_engine_by_id(id, commit=True, session=None):
-    query_engine = get_query_engine_by_id(id, session=session)
-    if query_engine:
+    if query_engine := get_query_engine_by_id(id, session=session):
         query_engine.deleted_at = None
         if commit:
             session.commit()
@@ -238,8 +236,7 @@ def get_all_query_metastore_by_environment(environment_id, session=None):
 
 @with_session
 def recover_query_metastore_by_id(id, commit=True, session=None):
-    query_metastore = get_query_metastore_by_id(id, session=session)
-    if query_metastore:
+    if query_metastore := get_query_metastore_by_id(id, session=session):
         query_metastore.deleted_at = None
 
         if commit:
@@ -249,8 +246,7 @@ def recover_query_metastore_by_id(id, commit=True, session=None):
 
 @with_session
 def delete_query_metastore_by_id(id, commit=True, session=None):
-    query_metastore = get_query_metastore_by_id(id, session=session)
-    if query_metastore:
+    if query_metastore := get_query_metastore_by_id(id, session=session):
         query_metastore.deleted_at = datetime.now()
 
         if commit:
@@ -294,8 +290,9 @@ def get_api_access_tokens(owner_uid=None, search_api_access_tokens="", session=N
     """
     query = session.query(APIAccessToken)
     query = query.filter(
-        APIAccessToken.description.like("%" + search_api_access_tokens + "%")
+        APIAccessToken.description.like(f"%{search_api_access_tokens}%")
     )
+
     return (
         query.order_by(APIAccessToken.enabled.desc())
         .order_by(APIAccessToken.updated_at.desc())
@@ -321,13 +318,12 @@ def disable_api_access_tokens(uid, creator_uid, commit=True, session=None):
     """
     Disables all API Access Tokens created by given user
     """
-    tokens = (
+    if tokens := (
         session.query(APIAccessToken)
         .filter(APIAccessToken.creator_uid == creator_uid)
         .filter(APIAccessToken.enabled.is_(True))
         .all()
-    )
-    if tokens:
+    ):
         for token in tokens:
             token.enabled = False
             token.updated_at = datetime.now()
@@ -341,8 +337,9 @@ def disable_api_access_tokens(uid, creator_uid, commit=True, session=None):
 def update_api_access_token(
     uid, api_access_token_id, enabled=False, commit=True, session=None
 ):
-    api_access_token = get_api_access_token_by_id(api_access_token_id, session=session)
-    if api_access_token:
+    if api_access_token := get_api_access_token_by_id(
+        api_access_token_id, session=session
+    ):
         api_access_token.enabled = enabled
         api_access_token.updater_uid = uid
         api_access_token.updated_at = datetime.now()

@@ -107,21 +107,20 @@ def with_session(fn):
                 session = get_session()()
                 kwargs["session"] = session
 
-        if session is not None:
-            try:
-                return fn(*args, **kwargs)
-            except SQLAlchemyError as e:
-                session.rollback()
-                # TODO: Log the sqlalchemy error?
-                import traceback
-
-                LOG.error(traceback.format_exc())
-                raise e
-            finally:
-                # Since we created the session, close it.
-                get_session().remove()
-        else:
+        if session is None:
             return fn(*args, **kwargs)
+        try:
+            return fn(*args, **kwargs)
+        except SQLAlchemyError as e:
+            session.rollback()
+            # TODO: Log the sqlalchemy error?
+            import traceback
+
+            LOG.error(traceback.format_exc())
+            raise e
+        finally:
+            # Since we created the session, close it.
+            get_session().remove()
 
     return func
 

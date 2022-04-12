@@ -122,14 +122,13 @@ def make_limiter(app):
 
 
 def make_socketio(app):
-    socketio = SocketIO(
+    return SocketIO(
         app,
         path="-/socket.io",
         message_queue=QuerybookSettings.REDIS_URL,
         json=flask_json,
         cors_allowed_origins="*",
     )
-    return socketio
 
 
 def make_blue_print(app, limiter):

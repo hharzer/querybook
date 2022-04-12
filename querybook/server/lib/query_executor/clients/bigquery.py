@@ -61,11 +61,7 @@ class BigQueryCursor(CursorBaseClass):
         return _fetch_k_rows(n)
 
     def get_columns(self):
-        if not self._first_row:
-            return None
-        return list(self._first_row.keys())
+        return list(self._first_row.keys()) if self._first_row else None
 
     def _convert_row(self, row):
-        if row:
-            return list(row.values())
-        return None
+        return list(row.values()) if row else None

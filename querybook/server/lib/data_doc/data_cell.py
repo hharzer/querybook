@@ -49,7 +49,7 @@ def _validate_series(valid_val, input_val):
     valid_series_keys = valid_val[0].keys()
     # Do a shallow key validation
     return all(
-        all([item_key in valid_series_keys for item_key in series_item])
+        all(item_key in valid_series_keys for item_key in series_item)
         for series_item in input_val.values()
     )
 

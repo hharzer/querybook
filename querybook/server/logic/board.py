@@ -10,7 +10,7 @@ def get_user_boards(uid, environment_id, filter_str="", session=None):
         owner_uid=uid, environment_id=environment_id, deleted_at=None
     )
     if filter_str:
-        query = query.filter(Board.name.like("%" + filter_str + "%"))
+        query = query.filter(Board.name.like(f"%{filter_str}%"))
     return query.all()
 
 
@@ -52,7 +52,7 @@ def update_board(id, commit=True, session=None, **fields):
 
 def item_type_to_id_type(item_type):
     assert item_type in ["data_doc", "table"], "Invalid item type"
-    return item_type + "_id"
+    return f"{item_type}_id"
 
 
 @with_session
@@ -128,8 +128,9 @@ def get_item_from_board(board_id, item_id, item_type, session=None):
 
 @with_session
 def remove_item_from_board(board_id, item_id, item_type, commit=True, session=None):
-    item = get_item_from_board(board_id, item_id, item_type, session=session)
-    if item:
+    if item := get_item_from_board(
+        board_id, item_id, item_type, session=session
+    ):
         session.delete(item)
         if commit:
             session.commit()
@@ -152,20 +153,17 @@ def get_board_ids_from_board_item(item_type, item_id, environment_id, session=No
 @with_session
 def get_or_create_user_favorite_board(uid, environment_id, session=None):
     user = User.get(id=uid, session=session)
-    favorite_board = (
+    return (
         session.query(Board)
-        .filter_by(owner_uid=uid, environment_id=environment_id, board_type="favorite")
-        .first()
-    )
-
-    if not favorite_board:
-        favorite_board = create_board(
-            name=f"{user.username}'s favorite",
-            environment_id=environment_id,
-            board_type="favorite",
-            public=False,
-            owner_uid=uid,
-            session=session,
+        .filter_by(
+            owner_uid=uid, environment_id=environment_id, board_type="favorite"
         )
-
-    return favorite_board
+        .first()
+    ) or create_board(
+        name=f"{user.username}'s favorite",
+        environment_id=environment_id,
+        board_type="favorite",
+        public=False,
+        owner_uid=uid,
+        session=session,
+    )

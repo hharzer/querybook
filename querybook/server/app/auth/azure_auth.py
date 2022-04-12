@@ -9,17 +9,11 @@ class AzureLoginManager(OAuthLoginManager):
     @property
     def oauth_config(self):
         return {
-            "callback_url": "{}{}".format(
-                QuerybookSettings.PUBLIC_URL, OAUTH_CALLBACK_PATH
-            ),
+            "callback_url": f"{QuerybookSettings.PUBLIC_URL}{OAUTH_CALLBACK_PATH}",
             "client_id": QuerybookSettings.OAUTH_CLIENT_ID,
             "client_secret": QuerybookSettings.OAUTH_CLIENT_SECRET,
-            "authorization_url": "https://login.microsoftonline.com/{}/oauth2/v2.0/authorize".format(
-                get_env_config("AZURE_TENANT_ID")
-            ),
-            "token_url": "https://login.microsoftonline.com/{}/oauth2/v2.0/token".format(
-                get_env_config("AZURE_TENANT_ID")
-            ),
+            "authorization_url": f'https://login.microsoftonline.com/{get_env_config("AZURE_TENANT_ID")}/oauth2/v2.0/authorize',
+            "token_url": f'https://login.microsoftonline.com/{get_env_config("AZURE_TENANT_ID")}/oauth2/v2.0/token',
             "profile_url": "https://graph.microsoft.com/oidc/userinfo",
             "scope": ["openid", "profile", "email", "User.Read"],
         }
@@ -27,8 +21,9 @@ class AzureLoginManager(OAuthLoginManager):
     def _get_user_profile(self, access_token):
         resp = requests.get(
             self.oauth_config["profile_url"],
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
+
         if not resp or resp.status_code != 200:
             raise AuthenticationError(
                 "Failed to fetch user profile, status ({0})".format(

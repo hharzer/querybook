@@ -78,23 +78,23 @@ class GetTemplatedVariablesInStringTestCase(TemplatingTestCase):
             get_templated_variables_in_string(
                 "some random text {{ test }} some random text"
             ),
-            set(["test"]),
+            {"test"},
         )
+
 
         self.assertEqual(
             get_templated_variables_in_string(
                 "{{ test }} Some random text {{ another_test }}"
             ),
-            set(["test", "another_test"]),
+            {"test", "another_test"},
         )
 
+
         self.assertEqual(
-            get_templated_variables_in_string("{# some comments #}<b>{{name}}</b>"),
-            set(
-                [
-                    "name",
-                ]
+            get_templated_variables_in_string(
+                "{# some comments #}<b>{{name}}</b>"
             ),
+            {"name"},
         )
 
     def test_nested(self):
@@ -102,14 +102,15 @@ class GetTemplatedVariablesInStringTestCase(TemplatingTestCase):
             get_templated_variables_in_string(
                 "{% set nums = [1,2,3] %}{% for i in nums %}{{ test }} Some random text {{ another_test }} {% endfor %}"
             ),
-            set(["test", "another_test"]),
+            {"test", "another_test"},
         )
+
 
         self.assertEqual(
             get_templated_variables_in_string(
                 "{% for i in range(5) %}{{ test }} Some {{ another_test }}{% endfor %}"
             ),
-            set(["test", "another_test"]),
+            {"test", "another_test"},
         )
 
 

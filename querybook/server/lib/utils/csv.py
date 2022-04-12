@@ -25,7 +25,7 @@ def str_to_csv_iter(raw_csv_str: str) -> Generator[List[List[str]], None, None]:
 
 def string_to_csv(raw_csv_str: str) -> List[List[str]]:
     csv_reader = str_to_csv_iter(raw_csv_str)
-    return [row for row in csv_reader]
+    return list(csv_reader)
 
 
 should_escape_list = (",", '"', "\n", "\r")

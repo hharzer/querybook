@@ -23,18 +23,18 @@ def get_presto_functions_from_page(page):
             function_signature_text = function_signature.get_text().strip()
             function_documentation_text = function_documentation.get_text().strip()
 
-            signature_match = re.search(
+            if signature_match := re.search(
                 r"(.*)\((.*)\) \u2192 (.*)", function_signature_text
-            )
-            if signature_match:
+            ):
                 parsed_functions.append(
                     {
-                        "name": signature_match.group(1).lower(),
-                        "params": signature_match.group(2),
-                        "return_type": signature_match.group(3),
+                        "name": signature_match[1].lower(),
+                        "params": signature_match[2],
+                        "return_type": signature_match[3],
                         "description": function_documentation_text,
                     }
                 )
+
     return parsed_functions
 
 
@@ -91,16 +91,18 @@ def get_all_hive_functions():
             function_signature = tds[1].get_text()
             description = tds[2].get_text()
 
-            signature_match = re.search(r"([a-zA-Z_]+)\((.*)\)", function_signature)
-            if signature_match:
+            if signature_match := re.search(
+                r"([a-zA-Z_]+)\((.*)\)", function_signature
+            ):
                 all_hive_functions.append(
                     {
-                        "name": signature_match.group(1).lower(),
-                        "params": signature_match.group(2),
+                        "name": signature_match[1].lower(),
+                        "params": signature_match[2],
                         "return_type": return_type,
                         "description": description,
                     }
                 )
+
 
     return all_hive_functions
 

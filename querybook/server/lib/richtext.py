@@ -26,8 +26,7 @@ def try_parse_draftjs(text) -> str:
 def draftjs_content_state_to_plaintext(content_state) -> str:
     blocks = content_state.get("blocks", [])
     blocks_text = [block.get("text", "") for block in blocks]
-    joined_blocks = "\n".join(blocks_text)
-    return joined_blocks
+    return "\n".join(blocks_text)
 
 
 def html_to_plaintext(html) -> str:

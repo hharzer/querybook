@@ -33,14 +33,13 @@ def get_all_schemas(
     if sort_order == "desc":
         col = col.desc()
 
-    result = (
+    return (
         query.order_by(col)
         .filter(DataSchema.metastore_id == metastore_id)
         .offset(offset)
         .limit(limit)
         .all()
     )
-    return result
 
 
 def get_schema_by_name_and_metastore_id(schema_name, metastore_id, session=None):
@@ -451,11 +450,9 @@ def update_column_by_id(
     if not table_column:
         return
 
-    column_updated = update_model_fields(
+    if column_updated := update_model_fields(
         model=table_column, skip_if_value_none=True, description=description
-    )
-
-    if column_updated:
+    ):
         table_column.updated_at = datetime.datetime.now()
 
         if commit:
@@ -623,7 +620,7 @@ def get_table_query_examples(
 
 @with_session
 def get_query_example_users(table_id, engine_ids, limit=5, session=None):
-    users = (
+    return (
         session.query(QueryExecution.uid, func.count(QueryExecution.id))
         .select_from(DataTableQueryExecution)
         .join(QueryExecution)
@@ -635,12 +632,10 @@ def get_query_example_users(table_id, engine_ids, limit=5, session=None):
         .all()
     )
 
-    return users
-
 
 @with_session
 def get_query_example_engines(table_id, environment_id, session=None):
-    engines = (
+    return (
         session.query(QueryExecution.engine_id, func.count(QueryExecution.id))
         .select_from(DataTableQueryExecution)
         .join(QueryExecution)
@@ -655,22 +650,21 @@ def get_query_example_engines(table_id, environment_id, session=None):
         .all()
     )
 
-    return engines
-
 
 @with_session
 def get_query_example_concurrences(table_id, limit=5, session=None):
     main_table_qe = aliased(DataTableQueryExecution)
     join_table_qe = aliased(DataTableQueryExecution)
 
-    concurrences = (
+    return (
         session.query(join_table_qe.table_id, func.count(join_table_qe.id))
         .select_from(main_table_qe)
         .join(
             join_table_qe,
             and_(
                 main_table_qe.id != join_table_qe.id,
-                main_table_qe.query_execution_id == join_table_qe.query_execution_id,
+                main_table_qe.query_execution_id
+                == join_table_qe.query_execution_id,
             ),
         )
         .filter(main_table_qe.table_id == table_id)
@@ -679,8 +673,6 @@ def get_query_example_concurrences(table_id, limit=5, session=None):
         .limit(limit)
         .all()
     )
-
-    return concurrences
 
 
 @with_session

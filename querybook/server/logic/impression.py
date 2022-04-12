@@ -28,34 +28,35 @@ def create_impression(item_id, item_type, uid, commit=True, session=None):
 
 @with_session
 def get_impressions_by_date(date, session=None):
-    impressions = (
-        session.query(Impression).filter(func.date(Impression.created_at) == date).all()
+    return (
+        session.query(Impression)
+        .filter(func.date(Impression.created_at) == date)
+        .all()
     )
-    return impressions
 
 
 @with_session
 def get_impressions_by_date_range(start_date, end_date, session=None):
-    impressions = (
+    return (
         session.query(Impression)
         .filter(func.date(Impression.created_at) >= start_date)
         .filter(func.date(Impression.created_at) <= end_date)
         .all()
     )
-    return impressions
 
 
 @with_session
 def get_impressions_by_item_type(item_type, session=None):
-    impressions = (
-        session.query(Impression).filter(Impression.item_type == item_type).all()
+    return (
+        session.query(Impression)
+        .filter(Impression.item_type == item_type)
+        .all()
     )
-    return impressions
 
 
 @with_session
 def get_impressions_by_item(item_type, item_id, limit, session=None):
-    impressions = (
+    return (
         session.query(Impression)
         .filter(Impression.item_type == item_type)
         .filter(Impression.item_id == item_id)
@@ -63,7 +64,6 @@ def get_impressions_by_item(item_type, item_id, limit, session=None):
         .limit(limit)
         .all()
     )
-    return impressions
 
 
 @with_session
@@ -78,7 +78,7 @@ def get_viewers_by_item(item_type, item_id, limit=100, session=None):
         .all()
     )
 
-    latest_viewers_objects = list(
+    return list(
         map(
             lambda x: {
                 "uid": x[0],
@@ -89,19 +89,16 @@ def get_viewers_by_item(item_type, item_id, limit=100, session=None):
         )
     )
 
-    return latest_viewers_objects
-
 
 @with_session
 def get_viewers_count_by_item_after_date(item_type, item_id, after_date, session=None):
-    count = (
+    return (
         session.query(Impression.uid)
         .distinct()
         .filter_by(item_type=item_type, item_id=item_id)
         .filter(Impression.created_at >= after_date)
         .count()
     )
-    return count
 
 
 @with_session
@@ -131,7 +128,7 @@ def get_viewers_by_item_after_date(
         .all()
     )
 
-    latest_viewers_objects = list(
+    return list(
         map(
             lambda x: {
                 "uid": x[0],
@@ -141,8 +138,6 @@ def get_viewers_by_item_after_date(
             latest_viewers,
         )
     )
-
-    return latest_viewers_objects
 
 
 def get_last_impressions_date():

@@ -12,8 +12,7 @@ from logic.datadoc_permission import assert_can_read, assert_can_write
 @with_session
 def get_datadoc(doc_id, session=None):
     assert_can_read(doc_id, session=session)
-    doc = logic.get_data_doc_by_id(id=doc_id, session=session)
-    if doc:
+    if doc := logic.get_data_doc_by_id(id=doc_id, session=session):
         verify_environment_permission([doc.environment_id])
         return doc.to_dict(with_cells=True)
 

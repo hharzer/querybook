@@ -61,7 +61,7 @@ def create_lineage_from_query(
         if (datadoc_cell and "title" in datadoc_cell.meta)
         else "Untitled"
     )
-    job_name = "{}-{}".format(cell_title, query_execution.id)
+    job_name = f"{cell_title}-{query_execution.id}"
     data_job_metadata = m_logic.create_job_metadata_row(
         job_name,
         metastore_id,
@@ -86,12 +86,11 @@ def sync_table_to_metastore(
     tables_to_add = set()
     tables_to_remove = set()
     for tables, statement_type in zip(table_per_statement, statement_types):
-        if statement_type == "DROP":
-            for table in tables:
+        for table in tables:
+            if statement_type == "DROP":
                 tables_to_add.discard(table)
                 tables_to_remove.add(table)
-        elif statement_type is not None:  # Any other DML/DDL
-            for table in tables:
+            elif statement_type is not None:  # Any other DML/DDL
                 tables_to_remove.discard(table)
 
                 # If table is create or alert, we must update metastore
@@ -142,11 +141,9 @@ def log_table_per_statement(
 
     for table in all_tables:
         schema_name, table_name = table.split(".")
-        query_table = m_logic.get_table_by_name(
+        if query_table := m_logic.get_table_by_name(
             schema_name, table_name, metastore_id=metastore_id, session=session
-        )
-
-        if query_table:  # Sanity check
+        ):
             m_logic.delete_old_table_query_execution_log(
                 cell_id=cell_id,
                 query_execution_id=query_execution_id,

@@ -106,8 +106,7 @@ def update_environment(id, commit=True, session=None, **field_to_update):
 
 @with_session
 def delete_environment_by_id(id, commit=True, session=None):
-    environment = get_environment_by_id(id, session=session)
-    if environment:
+    if environment := get_environment_by_id(id, session=session):
         environment.deleted_at = datetime.now()
 
         if commit:
@@ -119,8 +118,7 @@ def delete_environment_by_id(id, commit=True, session=None):
 
 @with_session
 def recover_environment_by_id(id, commit=True, session=None):
-    environment = get_environment_by_id(id, session=session)
-    if environment:
+    if environment := get_environment_by_id(id, session=session):
         environment.deleted_at = None
 
         if commit:

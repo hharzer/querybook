@@ -131,14 +131,12 @@ def update_data_doc(id, commit=True, session=None, **fields):
     if not data_doc:
         return
 
-    updated = update_model_fields(
+    if updated := update_model_fields(
         data_doc,
         skip_if_value_none=True,
         field_names=["public", "archived", "owner_uid", "title", "meta"],
         **fields,
-    )
-
-    if updated:
+    ):
         data_doc.updated_at = datetime.datetime.now()
 
         if commit:
@@ -283,10 +281,12 @@ def update_data_cell(
             data_cell.cell_type.name, fields["meta"]
         )
 
-    updated = update_model_fields(
-        data_cell, skip_if_value_none=True, field_names=["meta", "context"], **fields
-    )
-    if updated:
+    if updated := update_model_fields(
+        data_cell,
+        skip_if_value_none=True,
+        field_names=["meta", "context"],
+        **fields,
+    ):
         data_cell.updated_at = datetime.datetime.now()
         data_cell.doc.updated_at = datetime.datetime.now()
 
@@ -316,9 +316,10 @@ def copy_cell_history(from_cell_id, to_cell_id, commit=True, session=None):
                 data_cell_id=to_cell_id,
                 latest=execution.latest,
             )
-            for idx, execution in enumerate(all_executions)
+            for execution in all_executions
         ]
     )
+
 
     if commit:
         session.commit()
@@ -701,9 +702,7 @@ def create_snippet(
 
 @with_session
 def delete_snippet(snippet_id, deleted_by, session=None):
-    snippet = get_snippet_by_id(snippet_id, session=session)
-
-    if snippet:
+    if snippet := get_snippet_by_id(snippet_id, session=session):
         session.delete(snippet)
         session.commit()
 
@@ -827,13 +826,10 @@ def update_data_doc_editor(
     session=None,
     **fields,
 ):
-    editor = get_data_doc_editor_by_id(id, session=session)
-    if editor:
-        updated = update_model_fields(
+    if editor := get_data_doc_editor_by_id(id, session=session):
+        if updated := update_model_fields(
             editor, skip_if_value_none=True, read=read, write=write
-        )
-
-        if updated:
+        ):
             if commit:
                 session.commit()
             else:

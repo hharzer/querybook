@@ -20,7 +20,7 @@ class SlackNotifier(BaseNotifier):
     def notify(self, user, message):
         to = f"@{user.username}"
         url = "https://slack.com/api/chat.postMessage"
-        headers = {"Authorization": "Bearer {}".format(self.token)}
+        headers = {"Authorization": f"Bearer {self.token}"}
         text = self._convert_markdown(message)
         data = {
             "text": text,

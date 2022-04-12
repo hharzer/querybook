@@ -31,13 +31,9 @@ def is_bytes_valid_utf8_char(bs: bytes) -> bool:
     if not is_start_byte(bs[0]):
         return False
 
-    first_zero_char_pos = None
-    # Four possible variations
-    # 0, 110, 1110, 11110
-    for i in range(7, 2, -1):
-        if (bs[0] & (1 << i)) == 0:
-            first_zero_char_pos = i
-            break
+    first_zero_char_pos = next(
+        (i for i in range(7, 2, -1) if (bs[0] & (1 << i)) == 0), None
+    )
 
     valid_len = CHAR_POS_TO_STR_LENGTH.get(first_zero_char_pos, 0)
     if len(bs) != valid_len:
@@ -64,9 +60,7 @@ def split_by_last_invalid_utf8_char(binary_s: bytes) -> Tuple[bytes, bytes]:
     """
 
     last_start_byte = len(binary_s) - 1
-    while last_start_byte >= 0:
-        if is_start_byte(binary_s[last_start_byte]):
-            break
+    while last_start_byte >= 0 and not is_start_byte(binary_s[last_start_byte]):
         last_start_byte -= 1
 
     # We went thru the entire string and found no valid start byte

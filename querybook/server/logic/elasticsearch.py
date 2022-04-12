@@ -103,12 +103,12 @@ def _get_query_cell_executions_iter(batch_size=1000, session=None):
                     session=session,
                 )
                 for query_execution in query_cell_executions:
-                    expand_query_execution = query_execution_to_es(
+                    yield query_execution_to_es(
                         query_execution,
                         data_cell=query_cell,
                         session=session,
                     )
-                    yield expand_query_execution
+
                 query_executions_count += len(query_cell_executions)
                 if len(query_cell_executions) < batch_size:
                     break
@@ -139,10 +139,7 @@ def _get_adhoc_query_executions_iter(batch_size=1000, session=None):
         )
 
         for query_execution in query_executions:
-            expand_query_execution = query_execution_to_es(
-                query_execution, session=session
-            )
-            yield expand_query_execution
+            yield query_execution_to_es(query_execution, session=session)
 
         if len(query_executions) < batch_size:
             break
@@ -181,7 +178,7 @@ def query_execution_to_es(query_execution, data_cell=None, session=None):
 
     title = data_cell.meta.get("title", "Untitled") if data_cell else None
 
-    expand_query_execution = {
+    return {
         "id": query_execution_id,
         "query_type": "query_execution",
         "title": title,
@@ -194,7 +191,6 @@ def query_execution_to_es(query_execution, data_cell=None, session=None):
         "full_table_name": table_names,
         "query_text": query_execution.query,
     }
-    return expand_query_execution
 
 
 @with_exception
@@ -215,7 +211,7 @@ def update_query_execution_by_id(query_execution_id, session=None):
         try:
             _delete(index_name, id=query_execution_id)
         except Exception:
-            LOG.error("failed to delete {}. Will pass.".format(query_execution_id))
+            LOG.error(f"failed to delete {query_execution_id}. Will pass.")
     else:
         data_cell = get_data_cell_by_query_execution_id(
             query_execution_id, session=session
@@ -231,7 +227,7 @@ def update_query_execution_by_id(query_execution_id, session=None):
             }  # ES requires this format for updates
             _update(index_name, query_execution_id, updated_body)
         except Exception:
-            LOG.error("failed to upsert {}. Will pass.".format(query_execution_id))
+            LOG.error(f"failed to upsert {query_execution_id}. Will pass.")
 
 
 """
@@ -254,9 +250,7 @@ def get_query_cells_iter(batch_size=1000, session=None):
         )
 
         for query_cell in query_cells:
-            expand_query_cell = query_cell_to_es(query_cell, session=session)
-            yield expand_query_cell
-
+            yield query_cell_to_es(query_cell, session=session)
         if len(query_cells) < batch_size:
             break
         offset += batch_size
@@ -276,7 +270,7 @@ def query_cell_to_es(query_cell, session=None):
 
     datadoc = query_cell.doc
 
-    expand_query = {
+    return {
         "id": query_cell_id,
         "query_type": "query_cell",
         "title": query_cell_meta.get("title", "Untitled"),
@@ -289,7 +283,6 @@ def query_cell_to_es(query_cell, session=None):
         "full_table_name": table_names,
         "query_text": query,
     }
-    return expand_query
 
 
 @with_exception
@@ -310,7 +303,7 @@ def update_query_cell_by_id(query_cell_id, session=None):
         try:
             _delete(index_name, id=query_cell_id)
         except Exception:
-            LOG.error("failed to delete {}. Will pass.".format(query_cell_id))
+            LOG.error(f"failed to delete {query_cell_id}. Will pass.")
     else:
         formatted_object = query_cell_to_es(query_cell, session=session)
         try:
@@ -321,7 +314,7 @@ def update_query_cell_by_id(query_cell_id, session=None):
             }  # ES requires this format for updates
             _update(index_name, query_cell_id, updated_body)
         except Exception:
-            LOG.error("failed to upsert {}. Will pass.".format(query_cell_id))
+            LOG.error(f"failed to upsert {query_cell_id}. Will pass.")
 
 
 """
@@ -342,9 +335,7 @@ def get_datadocs_iter(batch_size=5000, session=None):
         LOG.info("\n--Datadocs count: {}, offset: {}".format(len(data_docs), offset))
 
         for data_doc in data_docs:
-            expand_datadoc = datadocs_to_es(data_doc, session=session)
-            yield expand_datadoc
-
+            yield datadocs_to_es(data_doc, session=session)
         if len(data_docs) < batch_size:
             break
         offset += batch_size
@@ -360,9 +351,7 @@ def datadocs_to_es(datadoc, session=None):
             cells_as_text.append(richtext_to_plaintext(cell.context))
         elif cell.cell_type == DataCellType.query:
             cell_title = cell.meta.get("title", "")
-            cell_text = (
-                cell.context if not cell_title else f"{cell_title}\n{cell.context}"
-            )
+            cell_text = f"{cell_title}\n{cell.context}" if cell_title else cell.context
             cells_as_text.append(cell_text)
         else:
             cells_as_text.append("[... additional unparsable content ...]")
@@ -372,16 +361,17 @@ def datadocs_to_es(datadoc, session=None):
     # There is no need to compute the list of editors
     # for public datadoc since everyone is able to see it
     editors = (
-        [
+        []
+        if datadoc.public
+        else [
             editor.uid
             for editor in get_data_doc_editors_by_doc_id(
                 data_doc_id=datadoc.id, session=session
             )
         ]
-        if not datadoc.public
-        else []
     )
-    expand_datadoc = {
+
+    return {
         "id": datadoc.id,
         "environment_id": datadoc.environment_id,
         "owner_uid": datadoc.owner_uid,
@@ -391,7 +381,6 @@ def datadocs_to_es(datadoc, session=None):
         "public": datadoc.public,
         "readable_user_ids": editors,
     }
-    return expand_datadoc
 
 
 @with_exception
@@ -412,7 +401,7 @@ def update_data_doc_by_id(doc_id, session=None):
         try:
             _delete(index_name, id=doc_id)
         except Exception:
-            LOG.error("failed to delete {}. Will pass.".format(doc_id))
+            LOG.error(f"failed to delete {doc_id}. Will pass.")
     else:
         formatted_object = datadocs_to_es(doc, session=session)
         try:
@@ -423,7 +412,7 @@ def update_data_doc_by_id(doc_id, session=None):
             }  # ES requires this format for updates
             _update(index_name, doc_id, updated_body)
         except Exception:
-            LOG.error("failed to upsert {}. Will pass.".format(doc_id))
+            LOG.error(f"failed to upsert {doc_id}. Will pass.")
 
 
 """
@@ -444,9 +433,7 @@ def get_tables_iter(batch_size=5000, session=None):
         LOG.info("\n--Table count: {}, offset: {}".format(len(tables), offset))
 
         for table in tables:
-            expand_table = table_to_es(table, session=session)
-            yield expand_table
-
+            yield table_to_es(table, session=session)
         if len(tables) < batch_size:
             break
         offset += batch_size
@@ -494,10 +481,10 @@ def table_to_es(table, session=None):
         else ""
     )
 
-    full_name = "{}.{}".format(schema_name, table_name)
+    full_name = f"{schema_name}.{table_name}"
     weight = get_table_weight(table.id, session=session)
 
-    expand_table = {
+    return {
         "id": table.id,
         "metastore_id": schema.metastore_id,
         "schema": schema_name,
@@ -521,7 +508,6 @@ def table_to_es(table, session=None):
         "importance_score": weight,
         "tags": [tag.tag_name for tag in table.tags],
     }
-    return expand_table
 
 
 def _bulk_insert_tables():
@@ -550,7 +536,7 @@ def update_table_by_id(table_id, session=None):
             _update(index_name, table_id, updated_body)
         except Exception:
             # Otherwise insert as new
-            LOG.error("failed to upsert {}. Will pass.".format(table_id))
+            LOG.error(f"failed to upsert {table_id}. Will pass.")
 
 
 def delete_es_table_by_id(
@@ -560,7 +546,7 @@ def delete_es_table_by_id(
     try:
         _delete(index_name, id=table_id)
     except Exception:
-        LOG.error("failed to delete {}. Will pass.".format(table_id))
+        LOG.error(f"failed to delete {table_id}. Will pass.")
 
 
 """
@@ -612,9 +598,7 @@ def get_users_iter(batch_size=5000, session=None):
         LOG.info("\n--User count: {}, offset: {}".format(len(users), offset))
 
         for user in users:
-            expanded_user = user_to_es(user, session=session)
-            yield expanded_user
-
+            yield user_to_es(user, session=session)
         if len(users) < batch_size:
             break
         offset += batch_size
@@ -637,7 +621,7 @@ def update_user_by_id(uid, session=None):
         try:
             _delete(index_name, id=uid)
         except Exception:
-            LOG.error("failed to delete {}. Will pass.".format(uid))
+            LOG.error(f"failed to delete {uid}. Will pass.")
     else:
         formatted_object = user_to_es(user, session=session)
         try:
@@ -648,7 +632,7 @@ def update_user_by_id(uid, session=None):
             }  # ES requires this format for updates
             _update(index_name, uid, updated_body)
         except Exception:
-            LOG.error("failed to upsert {}. Will pass.".format(uid))
+            LOG.error(f"failed to upsert {uid}. Will pass.")
 
 
 """

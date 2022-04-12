@@ -96,9 +96,7 @@ class ModelEntry(ScheduleEntry):
     next = __next__
 
     def save(self):
-        update_dict = {}
-        for field in self.save_fields:
-            update_dict[field] = getattr(self.model, field)
+        update_dict = {field: getattr(self.model, field) for field in self.save_fields}
         update_task_schedule(self.model.id, **update_dict)
 
     @classmethod
@@ -124,11 +122,11 @@ class ModelEntry(ScheduleEntry):
 
     @classmethod
     def _filter_options(cls, options):
-        options_ret = {}
-        for option in cls.valid_options:
-            if option in options:
-                options_ret[option] = options[option]
-        return options_ret
+        return {
+            option: options[option]
+            for option in cls.valid_options
+            if option in options
+        }
 
     def __repr__(self):
         return "<ModelEntry: {0} {1}(*{2}, **{3}) {4}>".format(
@@ -183,7 +181,7 @@ class DatabaseScheduler(Scheduler):
     def schedule_changed(self):
         last, ts = self._last_timestamp, self.Changes.last_change()
         try:
-            if ts and ts > (last if last else ts):
+            if ts and ts > (last or ts):
                 logger.info(
                     "DatabaseScheduler: Schedules are changed. Old: %s, New: %s",
                     last,

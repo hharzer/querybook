@@ -36,9 +36,7 @@ class TaskSchedules(Base):
     @classmethod
     @db.with_session
     def last_change(cls, session=None):
-        # always fetch using new session as the schedules can be updated by a different user
-        obj = session.query(cls).filter_by(id=1).first()
-        if obj:
+        if obj := session.query(cls).filter_by(id=1).first():
             return obj.last_update
 
 

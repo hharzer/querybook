@@ -22,15 +22,12 @@ class GlueDataCatalogClient:
         _LOG.info("Get all databases")
 
         paginator = self._glue_client.get_paginator("get_databases")
-        result = {}
         database_list = []
 
         for page in paginator.paginate(CatalogId=self.catalog_id):
             database_list.extend(page.get("DatabaseList"))
 
-        result["DatabaseList"] = database_list
-
-        return result
+        return {"DatabaseList": database_list}
 
     def get_all_database_names(self):
         """
@@ -41,9 +38,7 @@ class GlueDataCatalogClient:
         databases = self.get_all_databases()
         database_list = databases.get("DatabaseList")
 
-        result = [database.get("Name") for database in database_list]
-
-        return result
+        return [database.get("Name") for database in database_list]
 
     def get_all_tables(self, db_name):
         """
@@ -53,14 +48,10 @@ class GlueDataCatalogClient:
         _LOG.info(f"Get all Glue tables for the database ${db_name}")
         paginator = self._glue_client.get_paginator("get_tables")
         table_list = []
-        result = {}
-
         for page in paginator.paginate(CatalogId=self.catalog_id, DatabaseName=db_name):
             table_list.extend(page.get("TableList"))
 
-        result["TableList"] = table_list
-
-        return result
+        return {"TableList": table_list}
 
     def get_all_table_names(self, db_name):
         """
@@ -72,9 +63,7 @@ class GlueDataCatalogClient:
         tables = self.get_all_tables(db_name)
         table_list = tables.get("TableList")
 
-        result = [table.get("Name") for table in table_list]
-
-        return result
+        return [table.get("Name") for table in table_list]
 
     def get_table(self, db_name, tb_name):
         """
@@ -100,16 +89,12 @@ class GlueDataCatalogClient:
 
         paginator = self._glue_client.get_paginator("get_partitions")
         partition_list = []
-        result = {}
-
         for page in paginator.paginate(
             CatalogId=self.catalog_id, DatabaseName=db_name, TableName=tb_name
         ):
             partition_list.extend(page.get("Partitions", []))
 
-        result["Partitions"] = partition_list
-
-        return result
+        return {"Partitions": partition_list}
 
     def get_hms_style_partitions(
         self, db_name, tb_name, conditions: Dict[str, str] = None
@@ -135,8 +120,6 @@ class GlueDataCatalogClient:
         partition_list = partitions.get("Partitions")
         partition_values = [partition.get("Values") for partition in partition_list]
 
-        result = []
-
         if conditions:
             for condition_key, condition_value in conditions.items():
                 condition_key_index = partition_key_names.index(condition_key)
@@ -146,14 +129,14 @@ class GlueDataCatalogClient:
                     if partition_value[condition_key_index] == condition_value
                 ]
 
-        for partition_value in partition_values:
-            result.append(
-                "/".join(
-                    [
-                        key_name + "=" + value
-                        for key_name, value in zip(partition_key_names, partition_value)
-                    ]
-                )
+        return [
+            "/".join(
+                [
+                    f"{key_name}={value}"
+                    for key_name, value in zip(
+                        partition_key_names, partition_value
+                    )
+                ]
             )
-
-        return result
+            for partition_value in partition_values
+        ]

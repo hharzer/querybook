@@ -53,8 +53,7 @@ def with_exception(func):
     @wraps(func)
     def decorator(*args, **kwargs):
         try:
-            result = func(*args, **kwargs)
-            return result
+            return func(*args, **kwargs)
         except Exception as e:
             import traceback
 

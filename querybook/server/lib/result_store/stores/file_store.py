@@ -15,9 +15,8 @@ FILE_STORE_PATH = "/opt/store/"
 
 
 def get_file_uri(raw_uri: str) -> str:
-    if raw_uri.startswith("/"):
-        raw_uri = raw_uri[1:]
-    if len(raw_uri) == 0:
+    raw_uri = raw_uri.removeprefix("/")
+    if not raw_uri:
         raise ValueError("Invalid empty uri provided")
     return f"{FILE_STORE_PATH}{raw_uri}"
 

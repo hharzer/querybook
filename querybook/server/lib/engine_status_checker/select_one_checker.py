@@ -52,7 +52,7 @@ def check_select_one(
     except WrongSelectOneException as e:
         result["status"] = QueryEngineStatus.WARN.value
         result["messages"].append(str(e))
-    except (TimeoutError, Exception) as e:
+    except Exception as e:
         result["status"] = QueryEngineStatus.ERROR.value
         result["messages"].append(str(e))
 

@@ -40,8 +40,7 @@ class PrestoQueryExecutor(QueryExecutorBaseClass):
         try:
             if isinstance(e, Error):
                 error_type = QueryExecutionErrorType.ENGINE.value
-                error_dict = get_presto_error_dict(e)
-                if error_dict:
+                if error_dict := get_presto_error_dict(e):
                     error_extracted = error_dict.get("message", None)
                     # In Presto, only context free syntax error are labelled as
                     # SYNTAX_ERROR, and context sensitive errors are user errors

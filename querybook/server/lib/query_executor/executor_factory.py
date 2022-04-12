@@ -21,8 +21,7 @@ def create_executor_from_execution(query_execution_id, celery_task, session=None
     executor_params, engine = _get_executor_params_and_engine(
         query_execution_id, celery_task=celery_task, session=session
     )
-    executor = get_executor_class(engine.language, engine.executor)(**executor_params)
-    return executor
+    return get_executor_class(engine.language, engine.executor)(**executor_params)
 
 
 @with_session

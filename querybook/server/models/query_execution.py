@@ -132,7 +132,7 @@ class StatementExecution(Base):
 
     @with_formatted_date
     def to_dict(self):
-        item = {
+        return {
             "id": self.id,
             "statement_range_start": self.statement_range_start,
             "statement_range_end": self.statement_range_end,
@@ -146,8 +146,6 @@ class StatementExecution(Base):
             "has_log": self.has_log,
             "log_path": self.log_path,
         }
-
-        return item
 
 
 class StatementExecutionStreamLog(Base):

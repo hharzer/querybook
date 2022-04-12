@@ -51,8 +51,7 @@ class TrinoQueryExecutor(QueryExecutorBaseClass):
         if isinstance(e, Error):
             error_type = QueryExecutionErrorType.ENGINE.value
             try:
-                error_dict = get_trino_error_dict(e)
-                if error_dict:
+                if error_dict := get_trino_error_dict(e):
                     error_extracted = error_dict.get("message", None)
             except Exception:
                 pass

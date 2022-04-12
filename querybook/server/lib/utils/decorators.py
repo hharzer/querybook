@@ -85,11 +85,10 @@ def with_exception_retry(
                 try:
                     return func(*args, **kwargs)
                 except exception_cls as ex:
-                    if num_retry < max_retry:
-                        num_retry += 1
-                        time.sleep(get_retry_delay(num_retry))
-                    else:
+                    if num_retry >= max_retry:
                         raise ex
+                    num_retry += 1
+                    time.sleep(get_retry_delay(num_retry))
 
         return decorator
 

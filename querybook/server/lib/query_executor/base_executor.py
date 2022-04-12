@@ -328,7 +328,7 @@ class QueryExecutorLogger(object):
         ):  # No need to go through queries because no information
             return None, rows_uploaded
 
-        key = "querybook_temp/%s/result.csv" % str(statement_execution_id)
+        key = f"querybook_temp/{statement_execution_id}/result.csv"
         uploader = GenericUploader(key)
         uploader.start()
 
@@ -446,7 +446,7 @@ class QueryExecutorBaseClass(metaclass=ABCMeta):
     """
 
     @abstractclassmethod
-    def _get_client(cls, client_setting) -> ClientBaseClass:
+    def _get_client(self, client_setting) -> ClientBaseClass:
         """Return the corresponding QueryCursor class
 
         Arguments:
@@ -455,19 +455,19 @@ class QueryExecutorBaseClass(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractclassmethod
-    def EXECUTOR_LANGUAGE(cls) -> Union[str, List[str]]:
+    def EXECUTOR_LANGUAGE(self) -> Union[str, List[str]]:
         """Indicate corresponding the query language"""
         raise NotImplementedError
 
     @abstractclassmethod
-    def EXECUTOR_NAME(cls) -> str:
+    def EXECUTOR_NAME(self) -> str:
         """Distinct name for the executor.
         Must be distinct under for the same language.
         """
         raise NotImplementedError
 
     @abstractclassmethod
-    def EXECUTOR_TEMPLATE(cls) -> AllFormField:
+    def EXECUTOR_TEMPLATE(self) -> AllFormField:
         """Describes the shape of the client_settings that goes into _get_cursor"""
         raise NotImplementedError
 
@@ -548,9 +548,7 @@ class QueryExecutorBaseClass(metaclass=ABCMeta):
             elif self.status != QueryExecutionStatus.RUNNING:
                 return
 
-            current_statement_completed = self._is_statement_completed()
-            # Completed
-            if current_statement_completed:
+            if current_statement_completed := self._is_statement_completed():
                 self._on_statement_completion()
                 self._run_next_statement()
         except Exception as e:
