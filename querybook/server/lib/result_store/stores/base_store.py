@@ -77,7 +77,7 @@ class BaseReader(ABC):
         Returns:
             List[List[str]] -- the parsed csv
         """
-        return [row for row in self.get_csv_iter(number_of_lines)]
+        return list(self.get_csv_iter(number_of_lines))
 
     @abstractmethod
     def get_csv_iter(self, number_of_lines) -> Generator[List[List[str]], None, None]:

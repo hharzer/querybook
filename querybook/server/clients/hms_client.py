@@ -119,9 +119,9 @@ class HiveMetastoreClient:
                 SocketError,
             ) as ex:
                 _LOG.warning(
-                    "Failed to connect to hive metastore at %s"
-                    % function_for_node_info()
+                    f"Failed to connect to hive metastore at {function_for_node_info()}"
                 )
+
                 function_to_move_to_next_hostport()
                 if i == self._num_retries - 1:
                     _LOG.warning(
@@ -141,10 +141,9 @@ class HiveMetastoreClient:
                 # It did succeed in connecting, but got some other exception
                 if log_error:
                     _LOG.error(
-                        "Got an error when querying metastore at {}:".format(
-                            function_for_node_info()
-                        )
+                        f"Got an error when querying metastore at {function_for_node_info()}:"
                     )
+
                     _LOG.error(ex, exc_info=True)
                 raise ex
         return output
@@ -222,8 +221,7 @@ class HiveMetastoreClient:
         Returns:  List[str] The partitions keys of the table
         """
         table = self.get_table(db_name, tb_name)
-        partition_keys = [key.name for key in table.partitionKeys or []]
-        return partition_keys
+        return [key.name for key in table.partitionKeys or []]
 
     def get_filtered_partitions(
         self, db_name: str, tb_name: str, filter_clause: str
@@ -244,11 +242,10 @@ class HiveMetastoreClient:
             )
         )
         partition_keys = self._get_table_partition_keys(db_name, tb_name)
-        partition_names = [
+        return [
             format_partition_from_keys_and_values(partition_keys, partition.values)
             for partition in partitions
         ]
-        return partition_names
 
     def get_partitions(self, db_name, tb_name, filter_clause: str = None):
         """
@@ -282,7 +279,7 @@ def format_partition_from_keys_and_values(
     Returns:
         str -- Formatted partition name e.g. "dt=2021-01-01/hr=01"
     """
-    partition_name = "/".join(
-        f"{key}={value}" for key, value in zip(partition_keys, partition_values)
+    return "/".join(
+        f"{key}={value}"
+        for key, value in zip(partition_keys, partition_values)
     )
-    return partition_name

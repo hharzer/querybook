@@ -47,5 +47,5 @@ class TeamsNotifier(BaseNotifier):
         notification_endpoint = f"https://graph.microsoft.com/v1.0/teams/{self.group_id}/channels/{self.channel_id}/messages"
         text = self._convert_markdown(message)
         data = {"body": {"contentType": "html", "content": text}}
-        headers = {"Authorization": "Bearer {}".format(token)}
+        headers = {"Authorization": f"Bearer {token}"}
         requests.post(notification_endpoint, json=data, headers=headers)

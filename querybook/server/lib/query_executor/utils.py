@@ -33,9 +33,7 @@ def merge_str(str1: str, str2: str, separator: str = "\n") -> str:
     Returns:
         str -- The joined str
     """
-    if len(str1) and len(str2):
-        return str1 + separator + str2
-    return str1 or str2
+    return str1 + separator + str2 if len(str1) and len(str2) else str1 or str2
 
 
 def parse_exception(e):

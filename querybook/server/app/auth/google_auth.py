@@ -9,9 +9,7 @@ class GoogleLoginManager(OAuthLoginManager):
         google_config = get_google_oauth_config()
 
         return {
-            "callback_url": "{}{}".format(
-                QuerybookSettings.PUBLIC_URL, OAUTH_CALLBACK_PATH
-            ),
+            "callback_url": f"{QuerybookSettings.PUBLIC_URL}{OAUTH_CALLBACK_PATH}",
             "client_id": QuerybookSettings.OAUTH_CLIENT_ID,
             "client_secret": QuerybookSettings.OAUTH_CLIENT_SECRET,
             "authorization_url": google_config["authorization_endpoint"],

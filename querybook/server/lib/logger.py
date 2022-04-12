@@ -20,7 +20,7 @@ def get_logger(module):
             log_file_handler.setFormatter(formatter)
             log.addHandler(log_file_handler)
     except IOError:
-        print("{} not found".format(QuerybookSettings.LOG_LOCATION))
+        print(f"{QuerybookSettings.LOG_LOCATION} not found")
     finally:
         # Avoid debug logs in production
         log.setLevel(logging.INFO if QuerybookSettings.PRODUCTION else logging.DEBUG)

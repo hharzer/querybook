@@ -85,7 +85,7 @@ def delete_board(board_id, **fields):
     with DBSession() as session:
         assert_can_edit(board_id, session=session)
         board = Board.get(id=board_id, session=session)
-        api_assert(not board.board_type == "favorite", "Cannot delete favorite")
+        api_assert(board.board_type != "favorite", "Cannot delete favorite")
 
         Board.delete(board.id, session=session)
 
@@ -108,7 +108,7 @@ def get_board_ids_from_board_item(item_type: str, item_id: int, environment_id: 
     methods=["POST"],
 )
 def add_board_item(board_id, item_type, item_id):
-    api_assert(item_type == "data_doc" or item_type == "table", "Invalid item type")
+    api_assert(item_type in ["data_doc", "table"], "Invalid item type")
 
     with DBSession() as session:
         assert_can_edit(board_id, session=session)
@@ -150,7 +150,7 @@ def move_board_item(board_id, from_index, to_index):
     methods=["DELETE"],
 )
 def delete_board_item(board_id, item_type, item_id):
-    api_assert(item_type == "data_doc" or item_type == "table", "Invalid item type")
+    api_assert(item_type in ["data_doc", "table"], "Invalid item type")
     with DBSession() as session:
         assert_can_edit(board_id, session=session)
 

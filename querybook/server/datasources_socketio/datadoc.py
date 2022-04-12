@@ -178,8 +178,7 @@ def disconnect():
 @data_doc_socket
 def fetch_data_doc_editors(doc_id):
     with DBSession() as session:
-        doc = datadoc_collab.get_datadoc(doc_id, session=session)
-        if doc:
+        if doc := datadoc_collab.get_datadoc(doc_id, session=session):
             editors = logic.get_data_doc_editors_by_doc_id(doc_id, session=session)
             editor_dicts = [editor.to_dict() for editor in editors]
             socketio.emit(
@@ -196,8 +195,7 @@ def fetch_data_doc_editors(doc_id):
 @data_doc_socket
 def fetch_data_doc_access_requests(doc_id):
     with DBSession() as session:
-        doc = datadoc_collab.get_datadoc(doc_id, session=session)
-        if doc:
+        if doc := datadoc_collab.get_datadoc(doc_id, session=session):
             access_requests = logic.get_data_doc_access_requests_by_doc_id(
                 doc_id, session=session
             )

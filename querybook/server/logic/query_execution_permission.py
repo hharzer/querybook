@@ -13,12 +13,11 @@ def user_can_access_query_execution(uid, execution_id, session=None):
     if execution.uid == uid:
         return True
 
-    execution_data_doc_ids = (
+    if execution_data_doc_ids := (
         query_execution_logic.get_datadoc_id_from_query_execution_id(
             execution_id, session=session
         )
-    )
-    if execution_data_doc_ids:
+    ):
         for data_doc_pair in execution_data_doc_ids:
             doc_id, cell_id = data_doc_pair
             if user_can_read(doc_id=doc_id, uid=uid, session=session):

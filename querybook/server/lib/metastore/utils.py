@@ -27,7 +27,7 @@ class MetastoreTableACLChecker(object):
     ):
         if schema in self._tables_by_schema:
             for schema_table in self._tables_by_schema[schema]:
-                if schema_table == table or schema_table == "*":
+                if schema_table in [table, "*"]:
                     return True
         return False
 
@@ -36,14 +36,14 @@ class MetastoreTableACLChecker(object):
         schema,
         table,
     ):
-        if self._type != "allowlist" and self._type != "denylist":
+        if self._type not in ["allowlist", "denylist"]:
             return True
 
         table_in_list = self._is_table_in_list(schema, table)
         return table_in_list if self._type == "allowlist" else not table_in_list
 
     def is_schema_valid(self, schema):
-        if self._type != "allowlist" and self._type != "denylist":
+        if self._type not in ["allowlist", "denylist"]:
             return True
         schema_in_list = schema in self._tables_by_schema
         return schema_in_list if self._type == "allowlist" else not schema_in_list
@@ -52,7 +52,6 @@ class MetastoreTableACLChecker(object):
 class DataTableFinder:
     def __init__(self, metastore_id):
         self.metastore_id = metastore_id
-        pass
 
     def __enter__(self):
         self.start()
@@ -79,20 +78,18 @@ class DataTableFinder:
 
     @with_session
     def get_table_by_name(self, schema_name, table_name, session):
-        schema = self.get_schema_by_name(schema_name=schema_name, session=session)
-
-        if schema:
+        if schema := self.get_schema_by_name(
+            schema_name=schema_name, session=session
+        ):
             return logic.get_table_by_schema_id_and_name(
                 schema_id=schema.id, name=table_name, session=session
             )
 
     @with_session
     def get_table_column_by_name(self, schema_name, table_name, column_name, session):
-        table = self.get_table_by_name(
+        if table := self.get_table_by_name(
             schema_name=schema_name, table_name=table_name, session=session
-        )
-
-        if table:
+        ):
             return logic.get_column_by_name(
                 name=column_name, table_id=table.id, session=session
             )

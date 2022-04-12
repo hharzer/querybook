@@ -18,7 +18,7 @@ class PrestoClient(ClientBaseClass):
         presto_conf = get_presto_connection_conf(connection_string)
 
         host = presto_conf.host
-        port = 8080 if not presto_conf.port else presto_conf.port
+        port = presto_conf.port or 8080
 
         connection = presto.connect(
             host,
@@ -79,12 +79,7 @@ class PrestoCursor(CursorBaseClass):
 
     def get_columns(self):
         description = self._cursor.description
-        if description is None:
-            # Not a select query, no return
-            return None
-        else:
-            columns = list(map(lambda d: d[0], description))
-            return columns
+        return None if description is None else list(map(lambda d: d[0], description))
 
     @property
     def tracking_url(self):

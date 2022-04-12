@@ -31,26 +31,27 @@ def get_tags_by_keyword(keyword, limit=10, session=None):
 def create_or_update_tag(tag_name, commit=True, session=None):
     tag = Tag.get(name=tag_name, session=session)
 
-    if not tag:
-        tag = Tag.create({"name": tag_name, "count": 1}, commit=commit, session=session)
-    else:
-        tag = Tag.update(
+    tag = (
+        Tag.update(
             id=tag.id,
             fields={"count": tag.count + 1},
             commit=commit,
             session=session,
         )
+        if tag
+        else Tag.create(
+            {"name": tag_name, "count": 1}, commit=commit, session=session
+        )
+    )
 
     return tag
 
 
 @with_session
 def create_tag_item(table_id, tag_name, uid, session=None):
-    existing_tag_item = TagItem.get(
+    if existing_tag_item := TagItem.get(
         table_id=table_id, tag_name=tag_name, session=session
-    )
-
-    if existing_tag_item:
+    ):
         return
 
     tag = create_or_update_tag(tag_name=tag_name, commit=False, session=session)

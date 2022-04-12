@@ -230,7 +230,7 @@ class FunctionDocumentation(Base):
     description = sql.Column(sql.String(length=description_length))
 
     def to_dict(self):
-        item = {
+        return {
             "id": self.id,
             "language": self.language,
             "name": self.name,
@@ -238,8 +238,6 @@ class FunctionDocumentation(Base):
             "return_type": self.return_type,
             "description": self.description,
         }
-
-        return item
 
 
 class DataCellQueryExecution(Base):

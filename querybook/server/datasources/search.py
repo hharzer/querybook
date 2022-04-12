@@ -26,7 +26,7 @@ def _highlight_fields(fields_to_highlight):
 def _match_any_field(keywords="", search_fields=[]):
     if keywords == "":
         return {}
-    query = {
+    return {
         "multi_match": {
             "query": keywords,
             "fields": search_fields,
@@ -34,7 +34,6 @@ def _match_any_field(keywords="", search_fields=[]):
             "minimum_should_match": "100%",
         }
     }
-    return query
 
 
 def _make_singular_filter(filter_name: str, filter_val):
@@ -66,22 +65,23 @@ def _match_filters(filters):
     for f in filters:
         filter_name = str(f[0]).lower()
         filter_val = (
-            str(f[1]).lower()
-            if not isinstance(f[1], list)
-            else [str(v).lower() for v in f[1]]
+            [str(v).lower() for v in f[1]]
+            if isinstance(f[1], list)
+            else str(f[1]).lower()
         )
+
 
         if not filter_val or filter_val == "":
             continue
 
-        if filter_name == "startdate":
-            created_at_filter["gte"] = filter_val
-        elif filter_name == "enddate":
+        if filter_name == "enddate":
             created_at_filter["lte"] = filter_val
-        elif filter_name == "minduration":
-            duration_filter["gte"] = filter_val
         elif filter_name == "maxduration":
             duration_filter["lte"] = filter_val
+        elif filter_name == "minduration":
+            duration_filter["gte"] = filter_val
+        elif filter_name == "startdate":
+            created_at_filter["gte"] = filter_val
         else:
             filter_terms.append(_make_singular_filter(filter_name, filter_val))
     filters = {"filter": {"bool": {"must": filter_terms}}}
@@ -172,7 +172,7 @@ def _construct_query_search_query(
             {val: {"order": order}} for order, val in zip(sort_order, sort_key)
         ]
 
-        query.update({"sort": sort_query})
+        query["sort"] = sort_query
 
     query.update(
         _highlight_fields(
@@ -239,17 +239,16 @@ def _construct_datadoc_query(
             {val: {"order": order}} for order, val in zip(sort_order, sort_key)
         ]
 
-        query.update({"sort": sort_query})
-    query.update(
-        _highlight_fields(
-            {
-                "cells": {
-                    "fragment_size": 60,
-                    "number_of_fragments": 3,
-                }
+        query["sort"] = sort_query
+    query |= _highlight_fields(
+        {
+            "cells": {
+                "fragment_size": 60,
+                "number_of_fragments": 3,
             }
-        )
+        }
     )
+
 
     return json.dumps(query)
 
@@ -266,13 +265,12 @@ def _match_table_word_fields(fields):
     search_fields = []
     for field in fields:
         # 'table_name', 'description', and 'column' are fields used by Table search
-        if field == "table_name":
-            search_fields.append("full_name^2")
-            search_fields.append("full_name_ngram")
+        if field == "column":
+            search_fields.append("columns")
         elif field == "description":
             search_fields.append("description")
-        elif field == "column":
-            search_fields.append("columns")
+        elif field == "table_name":
+            search_fields.extend(("full_name^2", "full_name_ngram"))
     return search_fields
 
 
@@ -370,7 +368,7 @@ def _construct_tables_query(
             {val: {"order": order}} for order, val in zip(sort_order, sort_key)
         ]
 
-        query.update({"sort": sort_query})
+        query["sort"] = sort_query
     query.update(
         _highlight_fields(
             {
@@ -470,10 +468,8 @@ def search_query(
         sort_order=sort_order,
     )
 
-    index_name = "{},{}".format(
-        ES_CONFIG["query_cells"]["index_name"],
-        ES_CONFIG["query_executions"]["index_name"],
-    )
+    index_name = f'{ES_CONFIG["query_cells"]["index_name"]},{ES_CONFIG["query_executions"]["index_name"]}'
+
 
     results, count = _get_matching_objects(query, index_name, True)
     return {"count": count, "results": results}
@@ -542,14 +538,13 @@ def suggest_tables(metastore_id, prefix, limit=10):
     options = next(iter(result.get("suggest", {}).get("suggest", [])), {}).get(
         "options", []
     )
-    texts = [
+    return [
         "{}.{}".format(
             option.get("_source", {}).get("schema", ""),
             option.get("_source", {}).get("name", ""),
         )
         for option in options
     ]
-    return texts
 
 
 # /search/ but it is actually suggest
@@ -581,7 +576,7 @@ def suggest_user(name, limit=10, offset=None):
     options = next(iter(result.get("suggest", {}).get("suggest", [])), {}).get(
         "options", []
     )
-    users = [
+    return [
         {
             "id": option.get("_source", {}).get("id"),
             "username": option.get("_source", {}).get("username"),
@@ -589,4 +584,3 @@ def suggest_user(name, limit=10, offset=None):
         }
         for option in options
     ]
-    return users

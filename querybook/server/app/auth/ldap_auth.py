@@ -41,7 +41,7 @@ class LDAPUserInfo:
     @property
     def full_name(self) -> str:
         full_name = " ".join(filter(bool, [self.first_name, self.last_name]))
-        return full_name if full_name else self.cn
+        return full_name or self.cn
 
 
 def _sanitize_ldap_search_results(
@@ -116,12 +116,9 @@ def ldap_authenticate(ldap_conn: SimpleLDAPObject, user_dn: str, password: str):
 
 @with_session
 def login_user(username: str, email: str, full_name: str, session=None):
-    user = get_user_by_name(username, session=session)
-    if not user:
-        user = create_user(
-            username=username, fullname=full_name, email=email, session=session
-        )
-    return user
+    return get_user_by_name(username, session=session) or create_user(
+        username=username, fullname=full_name, email=email, session=session
+    )
 
 
 def search_user_by_uid(
@@ -186,16 +183,14 @@ def get_transformed_username(
                     f"Username in form of LDAP DN has to follow '{QuerybookSettings.LDAP_USER_DN}' pattern"
                 )
             username = match.group(1)
-    # Username in form of UID
+    elif QuerybookSettings.LDAP_USE_BIND_USER:
+        search_result = search_user_by_uid(ldap_conn, uid=username)
+        if not search_result:
+            # In case when provided UID wasn't found in LDAP
+            raise AuthenticationError(LDAPAuthErrors.BAD_CREDENTIALS)
+        dn = search_result[0]
     else:
-        if QuerybookSettings.LDAP_USE_BIND_USER:
-            search_result = search_user_by_uid(ldap_conn, uid=username)
-            if not search_result:
-                # In case when provided UID wasn't found in LDAP
-                raise AuthenticationError(LDAPAuthErrors.BAD_CREDENTIALS)
-            dn = search_result[0]
-        else:
-            dn = QuerybookSettings.LDAP_USER_DN.format(username)
+        dn = QuerybookSettings.LDAP_USER_DN.format(username)
 
     return username, dn
 

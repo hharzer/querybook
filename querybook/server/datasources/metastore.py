@@ -55,8 +55,7 @@ def get_schema(schema_id, include_metastore=False, include_table=False):
         api_assert(schema, "Invalid schema")
         verify_metastore_permission(schema.metastore_id, session=session)
 
-        schema_dict = schema.to_dict(include_metastore, include_table)
-        return schema_dict
+        return schema.to_dict(include_metastore, include_table)
 
 
 @register("/schema/<int:schema_id>/table/", methods=["GET"])
@@ -74,8 +73,7 @@ def get_table(table_id, with_schema=True, with_column=True, with_warnings=True):
         table = logic.get_table_by_id(table_id, session=session)
         api_assert(table, "Invalid table")
         verify_data_schema_permission(table.schema_id, session=session)
-        result = table.to_dict(with_schema, with_column, with_warnings)
-        return result
+        return table.to_dict(with_schema, with_column, with_warnings)
 
 
 @register("/table_name/<schema_name>/<table_name>/", methods=["GET"])
@@ -91,7 +89,7 @@ def get_table_by_name(
         table = logic.get_table_by_name(
             schema_name, table_name, metastore_id, session=session
         )
-        api_assert(table, "{}.{} does not exist".format(schema_name, table_name))
+        api_assert(table, f"{schema_name}.{table_name} does not exist")
         verify_data_schema_permission(table.schema_id, session=session)
         table_dict = table.to_dict(with_schema, with_column, with_warnings)
 
@@ -308,9 +306,7 @@ def get_column_by_table(table_id, column_name, with_table=False):
     with DBSession() as session:
         column = logic.get_column_by_name(column_name, table_id, session=session)
         verify_data_table_permission(column.table_id, session=session)
-        column_dict = column.to_dict(with_table)
-
-        return column_dict
+        return column.to_dict(with_table)
 
 
 @register("/column/<int:column_id>/", methods=["GET"])
@@ -318,9 +314,7 @@ def get_column(column_id, with_table=False):
     with DBSession() as session:
         column = logic.get_column_by_id(column_id, session=session)
         verify_data_table_permission(column.table_id, session=session)
-        column_dict = column.to_dict(with_table)
-
-        return column_dict
+        return column.to_dict(with_table)
 
 
 @register("/column/<int:column_id>/", methods=["PUT"])
@@ -367,9 +361,7 @@ def get_table_query_examples(
             offset=offset,
             session=session,
         )
-        query_ids = [log.query_execution_id for log in query_logs]
-
-        return query_ids
+        return [log.query_execution_id for log in query_logs]
 
 
 @register("/table/<int:table_id>/query_examples/users/", methods=["GET"])
@@ -545,8 +537,9 @@ def create_table_column_stats(data):
     with DBSession() as session:
 
         for d in data:
-            column = logic.get_column_by_id(d["column_id"], session=session)
-            if column:
+            if column := logic.get_column_by_id(
+                d["column_id"], session=session
+            ):
                 verify_data_table_permission(column.table_id, session=session)
                 for s in d["stats"]:
                     logic.upsert_table_column_stat(

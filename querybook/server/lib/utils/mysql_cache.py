@@ -27,9 +27,12 @@ def get_raw_key(key, expires_after=None, serialize=True, session=None):
     kvs = get_key_value_store(key, session=session)
     if not kvs:
         raise LookupError(f"Invalid key {key}")
-    if expires_after is not None:
-        if (datetime.utcnow() - kvs.updated_at).total_seconds() > expires_after:
-            raise LookupError(f"Invalid key {key}")
+    if (
+        expires_after is not None
+        and (datetime.utcnow() - kvs.updated_at).total_seconds()
+        > expires_after
+    ):
+        raise LookupError(f"Invalid key {key}")
     kvs_dict = kvs.to_dict()
     if serialize:
         kvs_dict["value"] = json.loads(kvs_dict["value"])

@@ -147,8 +147,6 @@ def search_query_snippet(environment_id, engine_id=None, is_public=False, golden
             session=session,
         )
 
-        query_snippet_dicts = [
+        return [
             dict(id=snippet[0], title=snippet[1]) for snippet in query_snippets
         ]
-
-        return query_snippet_dicts

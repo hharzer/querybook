@@ -26,8 +26,7 @@ def with_redis(fn):
             conn = get_redis()
             kwargs["redis_conn"] = conn
 
-        result = fn(*args, **kwargs)
-        return result
+        return fn(*args, **kwargs)
 
     return func
 

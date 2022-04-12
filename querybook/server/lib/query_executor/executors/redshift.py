@@ -21,8 +21,8 @@ class RedshiftQueryExecutor(SqlAlchemyQueryExecutor):
             if isinstance(orig_error, rs_errors.Error):
                 error_type = QueryExecutionErrorType.ENGINE.value
                 error_msg = getattr(e, "args", None)
-                error_extracted = None
-
                 if error_msg is not None:
+                    error_extracted = None
+
                     return error_type, str(error_msg), error_extracted
         return super(RedshiftQueryExecutor, self)._parse_exception(e)

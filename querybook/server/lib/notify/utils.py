@@ -15,8 +15,8 @@ def notify_user(user, template_name, template_params, notifier_name=None, sessio
             if notification_preference is not None
             else DEFAULT_NOTIFIER
         )
-        if notifier_name is None:
-            return
+    if notifier_name is None:
+        return
     notifier = get_notifier_class(notifier_name)
     markdown_message = render_message(template_name, template_params)
     notifier.notify(user=user, message=markdown_message)

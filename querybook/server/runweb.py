@@ -24,13 +24,8 @@ from app.server import flask_app
 
 def main():
     host = "0.0.0.0"
-    port = 5000
-    if len(sys.argv) > 1:
-        port = int(sys.argv[-1])
-
+    port = int(sys.argv[-1]) if len(sys.argv) > 1 else 5000
     debug = "--debug" in sys.argv
-    run_webpack = "--webpack" in sys.argv
-
     webpack_process = None
 
     if debug:
@@ -38,7 +33,8 @@ def main():
 
         Compress(flask_app)
 
-        # We are on the parent process
+        run_webpack = "--webpack" in sys.argv
+
         if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
             if run_webpack:
                 webpack_process = multiprocessing.Process(target=webpack)
@@ -60,7 +56,7 @@ def socketio_server(host="0.0.0.0", port=5000, debug=False):
     from app.flask_app import socketio
 
     gevent.socket.setdefaulttimeout(30000)
-    print("Running Querybook(w/ socketio) in port: {}".format(port))
+    print(f"Running Querybook(w/ socketio) in port: {port}")
     socketio.run(flask_app, host=host, port=port, debug=debug)
 
 

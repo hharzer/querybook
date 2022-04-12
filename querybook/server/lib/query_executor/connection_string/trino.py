@@ -20,10 +20,10 @@ def get_trino_connection_conf(connection_string: str) -> TrinoConnectionConf:
         connection_string,
     )
 
-    raw_hosts = match.group(1)
-    catalog = (match.group(2) or "/hive")[1:]
-    schema = (match.group(3) or "/default")[1:]
-    raw_conf = (match.group(4) or "?")[1:]
+    raw_hosts = match[1]
+    catalog = (match[2] or "/hive")[1:]
+    schema = (match[3] or "/default")[1:]
+    raw_conf = (match[4] or "?")[1:]
 
     parsed_hosts = [split_hostport(hostport) for hostport in raw_hosts.split(",")]
     configurations = get_parsed_variables(raw_conf, separator="&")

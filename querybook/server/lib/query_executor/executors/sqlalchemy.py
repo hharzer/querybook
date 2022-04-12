@@ -32,8 +32,9 @@ class SqlAlchemyQueryExecutor(QueryExecutorBaseClass):
                     match = re.search(r"at line (\d+)", message)
                     return get_parsed_syntax_error(
                         str(e.orig.args),
-                        int(match.group(1)) - 1 if match is not None else None,
+                        int(match[1]) - 1 if match is not None else None,
                     )
+
         return error_type, error_str, error_extracted
 
 

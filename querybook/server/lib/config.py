@@ -12,7 +12,7 @@ def get_config():
     if not __config:
         __config = {}
         for c in os.listdir(CONFIG_PATH):
-            with open(os.path.join(CONFIG_PATH, "./{}".format(c))) as f:
+            with open(os.path.join(CONFIG_PATH, f"./{c}")) as f:
                 __config[c.split(".")[0]] = yaml.load(f, Loader=yaml.FullLoader)
     return __config
 

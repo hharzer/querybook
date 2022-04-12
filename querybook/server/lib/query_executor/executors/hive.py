@@ -46,9 +46,8 @@ class HiveQueryExecutor(QueryExecutorBaseClass):
 
     def _get_logs(self):
         logs = super(HiveQueryExecutor, self)._get_logs()
-        match = re.search(hive_tracking_url_pattern, logs)
-        if match:
-            self._mr_jobs.append((match.group(1), match.group(2)))  # Job id  # Job url
+        if match := re.search(hive_tracking_url_pattern, logs):
+            self._mr_jobs.append((match[1], match[2]))
         return logs
 
     def _parse_exception(self, e):
@@ -58,8 +57,7 @@ class HiveQueryExecutor(QueryExecutorBaseClass):
         try:
             if isinstance(e, Error):
                 error_type = QueryExecutionErrorType.ENGINE.value
-                error_obj = get_hive_error_obj(e)
-                if error_obj:
+                if error_obj := get_hive_error_obj(e):
                     if error_obj.__class__.__name__ == "TExecuteStatementResp":
                         error_extracted = error_obj.status.errorMessage
                         error_code = error_obj.status.errorCode
@@ -71,14 +69,15 @@ class HiveQueryExecutor(QueryExecutorBaseClass):
                             error_code == 40000 and sql_state == "42000"
                         )
                         if is_compiler_error:
-                            match = re.search(r"(?i)Line (\d+):(\d+)", error_extracted)
-                            if match:
+                            if match := re.search(
+                                r"(?i)Line (\d+):(\d+)", error_extracted
+                            ):
                                 return get_parsed_syntax_error(
                                     error_extracted,
-                                    int(match.group(1)) - 1,
-                                    # hive's char position is 0 based, strange
-                                    int(match.group(2)),
+                                    int(match[1]) - 1,
+                                    int(match[2]),
                                 )
+
                     elif error_obj.__class__.__name__ == "TFetchResultsResp":
                         error_extracted = error_obj.status.errorMessage
             elif error_str.startswith(
@@ -124,11 +123,10 @@ def diagnose_query(tracking_url, job_id):
         job_info = make_rm_request(job_url)
         job_diagnostics = job_info["job"]["diagnostics"]
 
-        task_failed_match = re.search(
+        if task_failed_match := re.search(
             r"Task failed (task[_0-9a-zA-Z]+)", job_diagnostics
-        )
-        if task_failed_match:  # Query Failed due to task failed
-            task_id = task_failed_match.group(1)
+        ):
+            task_id = task_failed_match[1]
             task_attempt_url = f"{rm_host}/ws/v1/history/mapreduce/jobs/{job_id}/tasks/{task_id}/attempts"
             task_attempt_info = make_rm_request(task_attempt_url)
 

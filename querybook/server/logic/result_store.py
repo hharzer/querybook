@@ -29,8 +29,7 @@ def update_key_value_store(key, value, commit=True, session=None):  # csv
 
 @with_session
 def upsert_key_value_store(key, value, commit=True, session=None):
-    kvp = get_key_value_store(key, session=session)
-    if kvp:
+    if kvp := get_key_value_store(key, session=session):
         return update_key_value_store(key, value, commit, session=session)
     else:
         return create_key_value_store(key, value, commit, session=session)
@@ -43,8 +42,7 @@ def get_key_value_store(key, session=None):
 
 @with_session
 def delete_key_value_store(key, commit=True, session=None):
-    item = get_key_value_store(key=key, session=session)
-    if item:
+    if item := get_key_value_store(key=key, session=session):
         session.delete(item)
         if commit:
             session.commit()

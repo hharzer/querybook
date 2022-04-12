@@ -105,8 +105,7 @@ class HMSMetastoreLoader(BaseMetastoreLoader):
 
 def get_hive_metastore_table_description(hmc, db_name, table_name):
     try:
-        description = hmc.get_table(db_name, table_name)
-        return description
+        return hmc.get_table(db_name, table_name)
     except NoSuchObjectException:
         return None
 
@@ -118,8 +117,7 @@ def get_partition_filter_from_conditions(conditions: Dict[str, str] = None):
         f"{condition_key}='{condition_value}'"
         for condition_key, condition_value in conditions.items()
     ]
-    filter_clause = " AND ".join(conditions_list)
-    return filter_clause
+    return " AND ".join(conditions_list)
 
 
 def get_hive_metastore_table_partitions(

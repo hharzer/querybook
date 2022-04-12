@@ -125,16 +125,12 @@ def create_demo_data_doc(environment_id, engine_id, uid, session=None):
         meta={"Region": "Western Europe"},
         session=session,
     ).id
-    # create cells
-    cell_ids = []
-
     c_text = '{"blocks":[{"key":"2cd2q","text":"Welcome to Querybook! ","type":"header-one","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"fvpk","text":"This is a demo DataDoc.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"8h6cn","text":"Below are some pre-filled cells for you to interact with.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"e573u","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"3j5jq","text":"This is a text cell that can be used for creating narratives and note-taking.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"64j14","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"cgigd","text":"First, click on the Tables section in the left sidebar to look at the tables we have.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"c0ccn","text":"Click on any table and on VIEW TABLE to inspect.","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":26,"length":10,"style":"BOLD"}],"entityRanges":[],"data":{}},{"key":"a5jq6","text":"To see its relationship to the other tables,  click on the Lineage tab.","type":"unstyled","depth":0,"inlineStyleRanges":[{"offset":59,"length":7,"style":"BOLD"}],"entityRanges":[],"data":{}},{"key":"nfd6","text":"","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}},{"key":"alj0h","text":"Now, let us get started by clicking on the run button in the query cell below.","type":"unstyled","depth":0,"inlineStyleRanges":[],"entityRanges":[],"data":{}}],"entityMap":{}}'
     c_meta = {"collapsed": False}
     c_id = data_doc_logic.create_data_cell(
         cell_type="text", context=c_text, meta=c_meta, commit=False, session=session
     ).id
-    cell_ids.append(c_id)
-
+    cell_ids = [c_id]
     c_query = """SELECT
   Country,
   Rank2015 AS [2015],

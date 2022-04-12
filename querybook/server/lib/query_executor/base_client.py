@@ -100,11 +100,10 @@ class CursorBaseClass(metaclass=ABCMeta):
 
             if rows is None or len(rows) == 0:
                 break
-            for row in rows:
-                yield row
+            yield from rows
 
     def get_rows(self) -> List:
-        return [row for row in self.get_rows_iter()]
+        return list(self.get_rows_iter())
 
     def get(self) -> List:
         """Return all columns + rows
@@ -115,9 +114,8 @@ class CursorBaseClass(metaclass=ABCMeta):
         columns = self.get_columns()
         if columns is None:
             return None
-        else:
-            rows = self.get_rows()
-            return [columns] + rows
+        rows = self.get_rows()
+        return [columns] + rows
 
     def poll_until_finish(self, poll_interval=5):
         """Calling this function will continuously poll and sleep until finish
@@ -125,8 +123,5 @@ class CursorBaseClass(metaclass=ABCMeta):
         Keyword Arguments:
             poll_interval {int} -- The sleep interval (default: {5})
         """
-        while True:
-            # Poll returns true when finished
-            if self.poll():
-                break
+        while not self.poll():
             sleep(poll_interval)

@@ -24,12 +24,12 @@ class HiveClient(ClientBaseClass):
         with Timeout(120, "Timeout connecting to HiveServer"):
             connection_conf = get_hive_connection_conf(connection_string)
 
-            port = 10000 if not connection_conf.port else connection_conf.port
+            port = connection_conf.port or 10000
             configuration = dict(connection_conf.configuration)
             configuration["mapred.job.queue.name"] = "root.dev-test"
             if proxy_user and impersonate:
                 configuration["hive.server2.proxy.user"] = proxy_user
-                configuration["mapred.job.queue.name"] = "root.users.%s" % proxy_user
+                configuration["mapred.job.queue.name"] = f"root.users.{proxy_user}"
             self._connection = hive.connect(
                 host=connection_conf.host,
                 port=port,
@@ -92,12 +92,7 @@ class HiveCursor(CursorBaseClass):
 
     def get_columns(self):
         description = self._cursor.description
-        if description is None:
-            # Not a select query, no return
-            return None
-        else:
-            columns = list(map(lambda d: d[0], description))
-            return columns
+        return None if description is None else list(map(lambda d: d[0], description))
 
     def get_logs(self):
         log = self._cursor.fetch_logs()
@@ -125,32 +120,27 @@ class HiveCursor(CursorBaseClass):
                 else 0
             )
             self._percent_complete = round(percent_complete, 2) * 100
-        else:
-            # this is the fallback (in case no progressUpdateResponse is included)
-            # Hive <= 1.2.1. Fallback is to check map/reduce completed tasks
-            task_status = poll_result.taskStatus
-            if task_status:
-                try:
-                    parsed_task_status = json.loads(task_status)
-                    map_reduce_stages = [
-                        stage
-                        for stage in parsed_task_status
-                        if stage.get("taskType", "") == "MAPRED"
-                    ]
-                    if len(map_reduce_stages) > 0:
-                        stage_sum = sum(
-                            map(
-                                lambda stage: stage.get("mapProgress", 0)
-                                + stage.get("reduceProgress", 0),
-                                map_reduce_stages,
-                            )
+        elif task_status := poll_result.taskStatus:
+            try:
+                parsed_task_status = json.loads(task_status)
+                if map_reduce_stages := [
+                    stage
+                    for stage in parsed_task_status
+                    if stage.get("taskType", "") == "MAPRED"
+                ]:
+                    stage_sum = sum(
+                        map(
+                            lambda stage: stage.get("mapProgress", 0)
+                            + stage.get("reduceProgress", 0),
+                            map_reduce_stages,
                         )
-                        # Because each stage sum is a total of 200
-                        self._percent_complete = stage_sum / (
-                            len(map_reduce_stages) * 2
-                        )
-                except Exception as e:
-                    e  # to get rid of lint error
+                    )
+                    # Because each stage sum is a total of 200
+                    self._percent_complete = stage_sum / (
+                        len(map_reduce_stages) * 2
+                    )
+            except Exception as e:
+                e  # to get rid of lint error
 
     def _update_tracking_url(self, log: str):
         if self._tracking_url:
@@ -158,6 +148,5 @@ class HiveCursor(CursorBaseClass):
             # since we already have it
             return
 
-        match = hive_tracking_url_pattern.search(log)
-        if match:
+        if match := hive_tracking_url_pattern.search(log):
             self._tracking_url = match.group(1)

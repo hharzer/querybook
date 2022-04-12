@@ -8,9 +8,7 @@ from env import QuerybookSettings
 class GenericUploader(BaseUploader):
     def __init__(self, uri):
         self._uri = uri
-        self._uri_with_store_type = "{}://{}".format(
-            QuerybookSettings.RESULT_STORE_TYPE, uri
-        )
+        self._uri_with_store_type = f"{QuerybookSettings.RESULT_STORE_TYPE}://{uri}"
         self._uploader = ALL_RESULT_STORES[
             QuerybookSettings.RESULT_STORE_TYPE
         ].uploader(uri)

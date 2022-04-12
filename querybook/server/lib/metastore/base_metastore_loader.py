@@ -111,10 +111,9 @@ class BaseMetastoreLoader(metaclass=ABCMeta):
         # If no schema, then table doesn't exist
         schema = get_schema_by_name(schema_name, self.metastore_id, session=session)
         if not raw_table and schema is not None:
-            table = get_table_by_schema_id_and_name(
+            if table := get_table_by_schema_id_and_name(
                 schema.id, table_name, session=session
-            )
-            if table:
+            ):
                 delete_table(table_id=table.id, session=session)
 
     def load(self):
@@ -143,8 +142,7 @@ class BaseMetastoreLoader(metaclass=ABCMeta):
         self, schema_name: str, table_name: str, conditions: Dict[str, str] = None
     ):
         partitions = self.get_partitions(schema_name, table_name, conditions)
-        latest_partition = partitions[-1] if partitions and len(partitions) else None
-        return latest_partition
+        return partitions[-1] if partitions and len(partitions) else None
 
     def _create_tables_batched(self, schema_tables):
         """Create greenlets for create table batches
@@ -247,8 +245,7 @@ class BaseMetastoreLoader(metaclass=ABCMeta):
         num_threads = parallelization_setting["num_threads"]
         min_batch_size = parallelization_setting["min_batch_size"]
 
-        batch_size = max(int(math.ceil(num_tables / num_threads)), min_batch_size)
-        return batch_size
+        return max(int(math.ceil(num_tables / num_threads)), min_batch_size)
 
     def get_partitions(
         self, schema_name: str, table_name: str, conditions: Dict[str, str] = None

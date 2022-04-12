@@ -38,15 +38,14 @@ def make_samples_query(
     }
     query_filters = []
 
-    partition = _verify_or_get_partition(table, partition)
-    if partition:
+    if partition := _verify_or_get_partition(table, partition):
         query_filters.extend(_format_partition_filter(partition, column_type_by_name))
 
     if where is not None:
-        for where_filter in where:
-            query_filters.append(
-                _format_where_clause_filter(where_filter, column_type_by_name)
-            )
+        query_filters.extend(
+            _format_where_clause_filter(where_filter, column_type_by_name)
+            for where_filter in where
+        )
 
     query_filter_str = (
         "WHERE\n{}".format(" AND ".join(query_filters)) if len(query_filters) else ""
@@ -55,13 +54,11 @@ def make_samples_query(
     order_by_str = ""
     if order_by is not None:
         if order_by not in column_type_by_name:
-            raise SamplesError("Invalid order by " + order_by)
-        order_by_str = "ORDER BY {} {}".format(
-            order_by, "ASC" if order_by_asc else "DESC"
-        )
+            raise SamplesError(f"Invalid order by {order_by}")
+        order_by_str = f'ORDER BY {order_by} {"ASC" if order_by_asc else "DESC"}'
 
-    full_name = "%s.%s" % (table.data_schema.name, table.name)
-    query = """
+    full_name = f"{table.data_schema.name}.{table.name}"
+    return """
 SELECT
     *
 FROM {}
@@ -70,8 +67,6 @@ FROM {}
 LIMIT {}""".format(
         full_name, query_filter_str, order_by_str, limit
     )
-
-    return query
 
 
 def _verify_or_get_partition(table, partition: Union[str, None]) -> Union[str, None]:
@@ -88,18 +83,14 @@ def _verify_or_get_partition(table, partition: Union[str, None]) -> Union[str, N
         Union[str, None]: Valid partition or None if none available
     """
 
-    information = table.information
-    partitions = []
-    if information:
+    if information := table.information:
         partitions = json.loads(information.to_dict().get("latest_partitions") or "[]")
-
+    else:
+        partitions = []
     if partition is None:
         partition = next(iter(reversed(partitions)), None)
-    else:
-        # Since partition is provided
-        # Check the validity of partition provided
-        if not (len(partitions) and partition in partitions):
-            raise SamplesError("Invalid partition " + partition)
+    elif not len(partitions) or partition not in partitions:
+        raise SamplesError(f"Invalid partition {partition}")
 
     return partition
 
@@ -121,7 +112,7 @@ def _format_partition_filter(
     partition_filters = []
     for column_filter in partition.split("/"):
         column_name, column_val = column_filter.split("=")
-        column_type = column_type_by_name.get(column_name, None)
+        column_type = column_type_by_name.get(column_name)
         column_quote = ""
         if column_type == QuerybookColumnType.String:
             column_quote = "'"
@@ -160,12 +151,12 @@ def _format_where_clause_filter(
                     f"Invalid numeric filter value '{filter_val}' for column {column_name}"
                 )
         elif column_type == QuerybookColumnType.Boolean:
-            if filter_val != "true" and filter_val != "false":
+            if filter_val not in ["true", "false"]:
                 raise SamplesError(
                     f"Invalid boolean filter value '{filter_val}' for column {column_name}"
                 )
         else:  # column_type == QuerybookColumnType.String
-            filter_val = "'{}'".format(json.dumps(filter_val)[1:-1])
+            filter_val = f"'{json.dumps(filter_val)[1:-1]}'"
     else:
         filter_val = ""
 
@@ -242,11 +233,10 @@ def get_column_type_from_string(raw_column: str) -> QuerybookColumnType:
 
     # Extract the start of the raw_column
     match = re.match(r"^([a-zA-Z]+)", raw_column)
-    first_word = match.group(1).lower() if match is not None else ""
+    first_word = match[1].lower() if match is not None else ""
 
-    column_type = (
+    return (
         common_sql_types[first_word]
         if first_word in common_sql_types
         else QuerybookColumnType.Unknown
     )
-    return column_type

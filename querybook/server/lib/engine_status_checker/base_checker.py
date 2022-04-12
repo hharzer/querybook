@@ -18,7 +18,7 @@ class EngineStatus(TypedDict):
 
 class BaseEngineStatusChecker(metaclass=ABCMeta):
     @abstractclassmethod
-    def NAME(cls) -> str:
+    def NAME(self) -> str:
         """Name of the checker that will be shown on the frontend"""
         raise NotImplementedError()
 
@@ -39,7 +39,7 @@ class BaseEngineStatusChecker(metaclass=ABCMeta):
     """
 
     @abstractclassmethod
-    def _perform_check(cls, engine_id: int) -> EngineStatus:
+    def _perform_check(self, engine_id: int) -> EngineStatus:
         """Perform the check"""
         raise NotImplementedError()
 

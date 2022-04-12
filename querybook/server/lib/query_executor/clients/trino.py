@@ -10,7 +10,7 @@ class TrinoClient(ClientBaseClass):
         trino_conf = get_trino_connection_conf(connection_string)
 
         host = trino_conf.host
-        port = 8080 if not trino_conf.port else trino_conf.port
+        port = trino_conf.port or 8080
 
         connection = trino.dbapi.connect(
             host=host,
@@ -48,10 +48,9 @@ class TrinoCursor(CursorBaseClass):
     def poll(self):
         # this needs to be take care
         self.rows.extend(self._cursor._query.fetch())
-        self._cursor._iterator = iter(self.rows)
-        poll_result = self._cursor.stats
         completed = self._cursor._query._finished
-        if poll_result:
+        self._cursor._iterator = iter(self.rows)
+        if poll_result := self._cursor.stats:
             self._update_percent_complete(poll_result)
             self._update_tracking_url(poll_result)
 
@@ -69,12 +68,7 @@ class TrinoCursor(CursorBaseClass):
 
     def get_columns(self):
         description = self._cursor.description
-        if description is None:
-            # Not a select query, no return
-            return None
-        else:
-            columns = list(map(lambda d: d[0], description))
-            return columns
+        return None if description is None else list(map(lambda d: d[0], description))
 
     @property
     def tracking_url(self):

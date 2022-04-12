@@ -10,11 +10,7 @@ def test_ping_api(flask_client):
 
 def test_ping_deploy_api(flask_client, monkeypatch):
     with monkeypatch.context() as m:
-        m.setattr(
-            os.path,
-            "exists",
-            lambda p: True if p == "/tmp/querybook/deploying" else False,
-        )
+        m.setattr(os.path, "exists", lambda p: p == "/tmp/querybook/deploying")
         assert 503 == flask_client.get("/ping/").status_code
 
 

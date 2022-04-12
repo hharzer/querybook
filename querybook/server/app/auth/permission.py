@@ -27,7 +27,7 @@ def verify_environment_permission(environment_ids: List[int]):
     # If we are verifying environment ids and none is returned
     # it is most likely that the object we are verifying does
     # not associate with any environment
-    if len(environment_ids) == 0:
+    if not environment_ids:
         abort_404()
 
     api_assert(

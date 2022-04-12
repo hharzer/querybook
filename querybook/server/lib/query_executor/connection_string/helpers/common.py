@@ -33,6 +33,4 @@ def get_parsed_variables(
 
 
 def random_choice(choices: Sequence, default=None):
-    if len(choices) == 0:
-        return default
-    return choice(choices)
+    return default if len(choices) == 0 else choice(choices)

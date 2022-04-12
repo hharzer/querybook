@@ -68,7 +68,7 @@ class ChunkReader(metaclass=ABCMeta):
                 self._fill_buffer()
 
     def read_lines(self, number_of_lines=None) -> List[str]:
-        return [line for line in islice(self.read_line(), number_of_lines)]
+        return list(islice(self.read_line(), number_of_lines))
 
     def read_line(self):  # generator
         while (not self._eof) or len(self._buffer_deque):

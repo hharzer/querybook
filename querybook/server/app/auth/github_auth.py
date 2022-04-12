@@ -13,9 +13,7 @@ class GitHubLoginManager(OAuthLoginManager):
     @property
     def oauth_config(self):
         return {
-            "callback_url": "{}{}".format(
-                QuerybookSettings.PUBLIC_URL, OAUTH_CALLBACK_PATH
-            ),
+            "callback_url": f"{QuerybookSettings.PUBLIC_URL}{OAUTH_CALLBACK_PATH}",
             "client_id": QuerybookSettings.OAUTH_CLIENT_ID,
             "client_secret": QuerybookSettings.OAUTH_CLIENT_SECRET,
             "authorization_url": "https://github.com/login/oauth/authorize",
@@ -27,8 +25,9 @@ class GitHubLoginManager(OAuthLoginManager):
     def _get_user_profile(self, access_token):
         resp = requests.get(
             self.oauth_config["profile_url"],
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            headers={"Authorization": f"Bearer {access_token}"},
         )
+
         if not resp or resp.status_code != 200:
             raise AuthenticationError(
                 "Failed to fetch user profile, status ({0})".format(

@@ -25,7 +25,7 @@ def load_all_change_logs():
                 # These are used for developer references when upgrading
                 continue
 
-            with open(os.path.join(CHANGE_LOG_PATH, "./{}".format(filename))) as f:
+            with open(os.path.join(CHANGE_LOG_PATH, f"./{filename}")) as f:
                 changelog_date = filename.split(".")[0]
                 __change_logs.append(
                     {

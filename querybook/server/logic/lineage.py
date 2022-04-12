@@ -71,17 +71,17 @@ def add_table_lineage(
 
 @with_session
 def get_table_parent_lineages(table_id, session=None):
-    parent_lineages = (
-        session.query(TableLineage).filter(TableLineage.table_id == table_id).all()
+    return (
+        session.query(TableLineage)
+        .filter(TableLineage.table_id == table_id)
+        .all()
     )
-    return parent_lineages
 
 
 @with_session
 def get_table_child_lineages(table_id, session=None):
-    child_lineages = (
+    return (
         session.query(TableLineage)
         .filter(TableLineage.parent_table_id == table_id)
         .all()
     )
-    return child_lineages

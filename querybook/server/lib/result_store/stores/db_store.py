@@ -13,8 +13,7 @@ class DBReader(BaseReader):
         self._text = ""
 
     def start(self):
-        kvs = result_store.get_key_value_store(self._uri)
-        if kvs:
+        if kvs := result_store.get_key_value_store(self._uri):
             self._text = kvs.value
 
     def _get_first_n_lines(self, n: Optional[int]) -> List[str]:

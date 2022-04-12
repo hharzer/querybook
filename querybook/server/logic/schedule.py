@@ -75,7 +75,7 @@ def update_task_schedule(id, commit=True, session=None, no_changes=False, **kwar
     task_schedule = get_task_schedule_by_id(id, session=session)
 
     if not task_schedule:
-        raise Exception("unable to find any schedules for id {}".format(id))
+        raise Exception(f"unable to find any schedules for id {id}")
 
     update_model_fields(
         task_schedule,
@@ -102,8 +102,7 @@ def update_task_schedule(id, commit=True, session=None, no_changes=False, **kwar
 
 @with_session
 def delete_task_schedule(id, commit=True, session=None):
-    task_schedule = get_task_schedule_by_id(id=id, session=session)
-    if task_schedule:
+    if task_schedule := get_task_schedule_by_id(id=id, session=session):
         session.delete(task_schedule)
         if commit:
             session.commit()
@@ -122,13 +121,12 @@ def get_task_run_records(
     if task_type is not None:
         query = query.join(TaskSchedule).filter(TaskSchedule.task_type == task_type)
     if name:
-        query = query.filter(TaskRunRecord.name.like("%" + name + "%"))
+        query = query.filter(TaskRunRecord.name.like(f"%{name}%"))
     if hide_successful_jobs:
         query = query.filter(TaskRunRecord.status != TaskRunStatus.SUCCESS)
 
     query = query.order_by(TaskRunRecord.id.desc())
-    jobs = query.offset(offset).limit(limit).all()
-    return jobs
+    return query.offset(offset).limit(limit).all()
 
 
 @with_session
@@ -239,8 +237,7 @@ def create_task_run_record(name, session=None):
 
 @with_session
 def update_task_run_record(id, status=None, error_message=None, session=None):
-    run = get_task_run_record(id, session=session)
-    if run:
+    if run := get_task_run_record(id, session=session):
         if status is not None:
             run.status = status
 
@@ -292,8 +289,7 @@ def with_task_logging(
 
 @with_session
 def run_and_log_scheduled_task(scheduled_task_id, wait_to_finish=False, session=None):
-    schedule = get_task_schedule_by_id(scheduled_task_id)
-    if schedule:
+    if schedule := get_task_schedule_by_id(scheduled_task_id):
         result = celery.send_task(
             schedule.task,
             args=schedule.args,
